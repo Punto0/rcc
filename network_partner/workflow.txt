@@ -1,0 +1,34 @@
+Order:
+
+The status of the purchase order or the quotation request. "
+   
+A request for quotation is a purchase order in a 'Draft' status. 
+
+Then the order has to be confirmed by the user responsible , the status switch to 'Confirmed'. 
+
+Then the supplier must confirm the order to change the status to 'Approved'. 
+
+When the purchase order is paid and received, the status becomes 'Done'. 
+
+If a cancel action occurs in the invoice or in the receipt of goods, the status becomes "in exception."
+
+    STATE_SELECTION = [
+        ('draft', 'Draft PO'),
+        ('sent', 'RFQ'),
+        ('bid', 'Bid Received'),
+        ('confirmed', 'Waiting Approval'),
+        ('approved', 'Purchase Confirmed'),
+        ('except_picking', 'Shipping Exception'),
+        ('except_invoice', 'Invoice Exception'),
+        ('done', 'Done'),
+        ('cancel', 'Cancelled')
+
+Order.Line:
+
+'state': fields.selection([('draft', 'Draft'), ('confirmed', 'Confirmed'), ('done', 'Done'), ('cancel', 'Cancelled')],
+                                  'Status', required=True, readonly=True, copy=False,
+                                  help=' * The \'Draft\' status is set automatically when purchase order in draft status. \
+                                       \n* The \'Confirmed\' status is set automatically as confirm when purchase order in confirm status. \
+                                       \n* The \'Done\' status is set automatically when purchase order is set as done. \
+                                       \n* The \'Cancelled\' status is set automatically when user cancel purchase order.'),
+
