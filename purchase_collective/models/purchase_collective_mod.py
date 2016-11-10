@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-#added for onchange_product_id
-import pytz
 import logging
 
 from openerp import models, fields, api, osv, _, SUPERUSER_ID
 from openerp.exceptions import Warning
 
+#added for onchange_product_id
+import pytz
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from operator import attrgetter
@@ -23,7 +23,7 @@ class PurchaseCollectiveOrder(models.Model):
     _inherit = ['purchase.order',]  
     _description = 'Collective Purchases'
     
-    sales_order_lines = fields.One2many('sale.order','cp_order_id','Collective Order Lines',states={'approved':[('readonly',True)],'done':[('readonly',True)]},copy=True )
+    order_line = fields.One2many('purchase_collective.order_line','order_id','Collective Order Lines',states={'approved':[('readonly',True)],'done':[('readonly',True)]},copy=True )
 
     deadline_date = fields.Date(string='Order Deadline', required=True, help="End date of the order. Place your orders before this date")
     
@@ -44,7 +44,7 @@ class PurchaseCollectiveOrder(models.Model):
 
     qty_min =fields.Float('Cantidad mínima del pedido', required=True, help='Cantidad mínima del pedido requerida para ejecutar la orden de compra')
 
-    @api.onchange('sales_order_lines') 
+    @api.onchange('order_line') 
     def onchange_order_line(self, cr, uid, ids, args=None):
         #_logger.info("cr: %s -- uid : %s -- ids : %s -- args: %s" %(cr,uid,ids,args))
 
@@ -63,18 +63,21 @@ class PurchaseCollectiveOrder(models.Model):
 
         order = self.browse(cr, SUPERUSER_ID, ids)
         #_logger.info("order %s " %order.id)
-        val_tax = 0.0
-        val_untax = 0.0  
+
         if order:
             cur = order.pricelist_id.currency_id
             for line in order.order_line:
-                val = line._amount_all()
-                val_tax += val.get('amount_tax',0.0)
-                val_untax += val.get('amount_untaxed',0.0)
+                val1 += line.price_subtotal
+                #line_price = line._calc_line_base_price(cr, uid, context=context)
+                #line_qty = line._calc_line_quantity(cr, uid, context=context)
+                #for c in self.pool['account.tax'].compute_all(cr, uid, line.taxes_id, line.price_unit, line.product_qty, line.product_id, order.partner_id)['taxes']:
+                    #val += c.get('amount', 0.0)
 
-            res['amount_tax']=cur.round(val_tax)
-            res['amount_untaxed']=cur.round(val_untax)
-            res['amount_total']=res['amount_untaxed'] + res['amount_tax']
+            #_logger.info("Vals : %s -- %s " %(val, val1))
+            
+            res['amount_tax']= 0 # cur.round(val)
+            res['amount_untaxed']= cur.round(val1)
+            res['amount_total']= res['amount_untaxed']
 
             #_logger.info("Res : %s " %res)
 
@@ -88,18 +91,17 @@ class PurchaseCollectiveOrder(models.Model):
     def subscribe(self, partner):
         self.message_subscribe(partner_ids=[(partner.id)])
         self.message_post(body=("Order line created by %s" %(partner.name)))
-  
+    
     @api.multi
     def button_details(self):
+       """ 
        context = self.env.context.copy()
        view_id = self.env.ref(
-            'sale.'
-            'view_order_form').id
+            'purchase_collective.'
+            'purchase_order_line_button_form_view2').id
 
-       context['default_is_cp'] = True 
-       context['default_cp_order_id'] = self.id 
-       context['supplier'] = self.partner_id
-       #context['default_partner_id'] = self.partner_id.id
+       context['default_partner_id'] = self.partner_id.id
+       context['default_order_id'] = self.id 
        context['default_pricelist_id'] = self.pricelist_id.id
        context['default_order_date'] = self.date_order
        context['default_date_planned'] = self.deadline_date
@@ -114,7 +116,7 @@ class PurchaseCollectiveOrder(models.Model):
             'name': _('Details'),
             'view_type': 'form',
             'view_mode': 'form',
-            'res_model': 'sale.order',
+            'res_model': 'purchase_collective.order_line',
             'view_id': view_id,
             'type': 'ir.actions.act_window',
             'target': 'new',
@@ -122,7 +124,8 @@ class PurchaseCollectiveOrder(models.Model):
             #'res_id': partial_id,
             'context': context
        }
-       return view
+       """
+       return True
 
     def _get_order(self, cr, uid, ids, context=None):
         result = {}
@@ -159,12 +162,12 @@ class PurchaseCollectiveOrder(models.Model):
 
         # automatically sending subflow.delete upon deletion
         self.signal_workflow(cr, uid, unlink_ids, 'purchase_cancel')
-
         return super(PurchaseCollectiveOrder, self).unlink(cr, uid, unlink_ids, context=context)
 
     def copy(self, cr, uid, id, default=None, context=None):
         # FORWARDPORT UP TO SAAS-6
         new_id = super(PurchaseCollectiveOrder, self).copy(cr, uid, id, default=default, context=context)
+        """ 
         for po in self.browse(cr, uid, [new_id], context=context):
             for line in po.order_line:
                 vals = self.pool.get('purchase_collective.order_line').onchange_product_id(
@@ -173,11 +176,12 @@ class PurchaseCollectiveOrder(models.Model):
                 )
                 if vals.get('value', {}).get('date_planned'):
                     line.write({'date_planned': vals['value']['date_planned']})
+        """
         return new_id
-   
+
     def set_order_line_status(self, cr, uid, ids, status, context=None):
-        """ 
-        line = self.pool.get('purchase_collective.order_line')
+        """  
+        line = self.pool.get('purchase_collective.sale.order')
         order_line_ids = []
         proc_obj = self.pool.get('procurement.order')
         for order in self.browse(cr, uid, ids, context=context):
@@ -191,9 +195,9 @@ class PurchaseCollectiveOrder(models.Model):
             procs = proc_obj.search(cr, uid, [('purchase_line_id', 'in', order_line_ids)], context=context)
             if procs:
                 proc_obj.write(cr, uid, procs, {'state': 'exception'}, context=context)
-        """
+        """ 
         return True
-    
+
     def wkf_confirm_order(self, cr, uid, ids, context=None):
         _logger.info("Confirmando orden : %s" %ids)       
         todo = []
@@ -239,7 +243,25 @@ class PurchaseCollectiveOrder(models.Model):
             if is_invoiced:
                 self.pool['purchase_collective.order_line'].write(cr, uid, is_invoiced, {'invoiced': True})
             workflow.trg_write(uid, 'purchase_colective.order', po.id, cr)
-         """
+        """ 
+
+    def wkf_confirm_order(self, cr, uid, ids, context=None):
+        _logger.info("Confirmando orden : %s " %ids)
+        todo = []
+        for po in self.browse(cr, uid, ids, context=context):
+            if not any(line.state != 'cancel' for line in po.order_line):
+                raise osv.except_osv(_('Error!'),_('You cannot confirm a purchase order without any purchase order line.'))
+            #if po.invoice_method == 'picking' and not any([l.product_id and l.product_id.type in ('product', 'consu') and l.state != 'cancel' for l in po.order_line]):
+            #    raise osv.except_osv(
+            #        _('Error!'),
+            #        _("You cannot confirm a purchase order with Invoice Control Method 'Based on incoming shipments' that doesn't contain any stockable item."))
+            #for line in po.order_line:
+            #    if line.state=='draft':
+            #        todo.append(line.id)        
+        #self.pool.get('purchase_collective.order_line').action_confirm(cr, uid, todo, context)
+        for id in ids:
+            self.write(cr, uid, [id], {'state' : 'confirmed', 'validator' : uid}, context=context)
+        return True
 
     def action_picking_create(self, cr, uid, ids, context=None):
         for order in self.browse(cr, uid, ids):

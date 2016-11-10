@@ -59,7 +59,7 @@
             <field name="join_mode">AND</field>
             <field name="action">wkf_approve_order()</field>
         </record>
-<!--
+
         <record id="act_invoice" model="workflow.activity">
             <field name="wkf_id" ref="purchase_collective_order"/>
             <field name="name">invoice</field>
@@ -67,7 +67,7 @@
             <field name="subflow_id" search="[('osv','=','account.invoice')]"/>
             <field name="action">action_invoice_create()</field>
         </record>
--->
+
         <record id="act_invoice_done" model="workflow.activity">
             <field name="wkf_id" ref="purchase_collective_order"/>
             <field name="name">invoice_done</field>
@@ -158,13 +158,13 @@
             <field name="act_to" ref="act_picking_done"/>
             <field name="condition">not has_stockable_product()</field>
         </record>
-<!--
+
         <record id="trans_router_invoice" model="workflow.transition">
             <field name="act_from" ref="act_router"/>
             <field name="act_to" ref="act_invoice"/>
             <field name="condition">invoice_method=='order'</field>
         </record>
--->
+
         <record id="trans_router_invoice_no_order" model="workflow.transition">
             <field name="act_from" ref="act_router"/>
             <field name="act_to" ref="act_invoice_end"/>
@@ -196,25 +196,25 @@
             <field name="act_to" ref="act_except_picking"/>
             <field name="signal">picking_cancel</field>
         </record>
-<!--
+
         <record id="trans_invoice_except_invoice" model="workflow.transition">
             <field name="act_from" ref="act_invoice"/>
             <field name="act_to" ref="act_except_invoice"/>
             <field name="signal">subflow.cancel</field>
         </record>
--->
+
         <record id="trans_picking_picking_done" model="workflow.transition">
             <field name="act_from" ref="act_picking"/>
             <field name="act_to" ref="act_picking_done"/>
             <field name="signal">picking_done</field>
         </record>
-<!--
+
         <record id="trans_invoice_invoice_done" model="workflow.transition">
             <field name="act_from" ref="act_invoice"/>
             <field name="act_to" ref="act_invoice_done"/>
             <field name="signal">subflow.paid</field>
         </record>
--->
+
         <record id="trans_picking_done_done" model="workflow.transition">
             <field name="act_from" ref="act_picking_done"/>
             <field name="act_to" ref="act_done"/>
@@ -237,3 +237,4 @@
 
     </data>
 </openerp>
+

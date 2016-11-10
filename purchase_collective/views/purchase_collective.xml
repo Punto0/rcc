@@ -1,67 +1,19 @@
 <openerp>
     <data noupdate="0">
-        <record model="ir.ui.view" id="purchase_order_line_button_form_view2">
-            <field name="name">purchase.collective.order.line.form2</field>
-            <field name="model">purchase_collective.order_line</field>
-            <field name="priority" eval="20"/>
-            <field name="arch" type="xml">
-                <form string="Purchase Collective Order Line" create="true">
-                    <sheet>
-                        <label for="order_id" class="oe_edit_only"/>
-                        <h1>
-                            <field name="order_id" readonly="1" class="oe_inline" />
-                            <label string="," attrs="{'invisible':[('date_order','=',False)]}"/>
-                            <field name="date_order" class="oe_inline"/>
-                        </h1>
-                        <label string="Supplier : " class="oe_inline" />
-                        <h2><field name="partner_id" readonly="1" class="oe_inline" /></h2>
-                        <label string="Customer : " class="oe_inline" attrs="{'invisible':[('create_uid','=',False)]}"/>
-                        <h2><field name="create_uid" readonly="1" class="oe_inline" /></h2>
-                        <group> 
-                            <group>
-                                <field name="product_id" readonly="0" options="{'no_create': True}" domain="[('seller_ids.name','=',partner_id)]" on_change="onchange_product_id(False,product_id,0,False,partner_id)"/>
-                                <!-- Show the field but not edit it -->
-                                <field name="price_unit" on_change="check_price(product_id, price_unit)"/>
-                                <label for="product_qty"/>
-                                <div>
-                                    <field name="product_qty" readonly="0" class="oe_inline"/>
-                                    <field name="product_uom" readonly="1" groups="product.group_uom" class="oe_inline"/>
-                                </div>
-                                <field name="date_planned" widget="date" invisible='1'/>
-                                <field name="name"/>
-                            </group>
-<!--                            <group>
-                                <field name="taxes_id" widget="many2many_tags"
-                                    domain="[('parent_id','=',False),('type_tax_use','!=','sale')]"/>
-                                <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
-                                <field name="account_analytic_id" colspan="4" groups="purchase.group_analytic_accounting"/>
-                                <field name="invoiced"/> 
-                            </group> 
--->
-                        </group>
-                    </sheet>
-                    <footer invisible="not context.get('view_buttons')">
-                        <button class="oe_highlight" name="button_save_data" string="Save" type="object" />
-                        or
-                        <button class="oe_link" special="cancel" string="Cancel" />
-                    </footer>
-                </form>
-            </field>
-        </record>
-
         <record id="purchase_collective_order_form" model="ir.ui.view">
             <field name="name">purchase.collective.order.form</field>
             <field name="model">purchase_collective.order</field>
             <field name="arch" type="xml">
                 <form string="Collective Purchase Order">
                 <header>
-                    <button name="button_details" string="Add your order" type="object" class="oe_highlight"/>     
+<!--                    <button name="button_details" string="Add your order" type="object" class="oe_highlight"/>     
                     <button name="bid_received" states="sent" string="Bid Received" class="oe_highlight"/>
                     <button name="wkf_send_rfq" states="draft" string="Send RFQ by Email" type="object" context="{'send_rfq':True}" class="oe_highlight"/>
                     <button name="wkf_send_rfq" states="sent" string="Re-Send RFQ by Email" type="object" context="{'send_rfq':True}"/>
                     <button name="print_quotation" string="Print RFQ" type="object" states="draft" class="oe_highlight" groups="base.group_user"/>
                     <button name="print_quotation" string="Re-Print RFQ" type="object" states="sent" groups="base.group_user"/>
-                    <button name="purchase_confirm" states="draft" string="Confirm Order" id="draft_confirm"/>
+-->
+                    <button name="wkf_confirm_order" states="draft" string="Confirm Order" type="object"/>
                     <button name="purchase_confirm" states="bid" string="Confirm Order" class="oe_highlight" id="bid_confirm"/>
                     <button name="picking_ok" states="except_picking" string="Manually Corrected"/>
                     <button name="invoice_ok" states="except_invoice" string="Manually Corrected"/>
@@ -76,8 +28,8 @@
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <label string="Request for Quotation " attrs="{'invisible': [('state','not in',('draft','sent','bid'))]}"/>
-                            <label string="Collective Purchase Order " attrs="{'invisible': [('state','in',('draft','sent','bid'))]}"/>
+                            <label string="Collective Purchase Order -- Open " attrs="{'invisible': [('state','not in',('draft','sent','bid'))]}"/>
+                            <label string="Collective Purchase Order -- Closed" attrs="{'invisible': [('state','in',('draft','sent','bid'))]}"/>
                             <field name="name" class="oe_inline" readonly="1"/>
                         </h1>
                     </div>
@@ -109,9 +61,10 @@
                         <group>
                             <field name="date_order" />
                             <field name="deadline_date" attrs="{ 'required' : '1' }" />
+                            <field name="qty_min" attrs=" { 'required' : '1' }" />
                             <field name="origin" attrs="{'invisible': [('origin','=',False)]}"/>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
-                            <field name="picking_type_id" on_change="onchange_picking_type_id(picking_type_id, context)" domain="[('code','=','incoming')]" options="{'no_create': True}" context="{'special_shortened_wh_name': True}" groups="stock.group_locations"/>
+                            <field name="picking_type_id" on_change="onchange_picking_type_id(picking_type_id, context)" domain="[('code','=','incoming')]" options="{'no_create': True}" context="{'special_shortened_wh_name': True}" groups="stock.group_locations" />
                             <field name="related_usage" invisible="1"/>
                             <field name="dest_address_id" string="Customer Address" on_change="onchange_dest_address_id(dest_address_id, context)"
                                 attrs="{'invisible':[('related_usage','!=','customer')], 'required': [('related_usage','=', 'customer')]}"
@@ -119,31 +72,26 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Products">
-                            <field name="order_line">
+                        <page string="Orders">
+                            <field name="sales_order_lines">
                                 <tree string="Collective Purchase Order Lines" editable="bottom">
-                                    <field name="product_id" 
-                                           on_change="onchange_product_id(parent.pricelist_id,product_id,0,False,parent.partner_id, parent.date_order,parent.fiscal_position,date_planned,False,False,parent.state,context)"/>
                                     <field name="name"/>
-                                    <field name="date_planned" invisible='1'/>
-<!--                                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
-                                    <field name="account_analytic_id" groups="purchase.group_analytic_accounting" domain="[('type','not in',('view','template'))]"/>
+                                    <field name="partner_id" string="Customer"/> 
+                                    <field name="state" invisible='0'/>
+                                    <field name="amount_total"/>
+<!--
+                                    <button name="button_manual_payment" string="Manual Payment" type="object" 
+                                            context="{'purchase_collective_line' : True, 'order_line_id': id, 'create_uid' : create_uid}"
+                                            states="draft"
+                                        />
 -->
-                                    <field name="product_qty" on_change="onchange_product_id(parent.pricelist_id,product_id,product_qty,product_uom,parent.partner_id,parent.date_order,parent.fiscal_position,date_planned,name,False,parent.state,context)"/>
-                                 <!--   <field name="product_uom" groups="product.group_uom" on_change="onchange_product_uom(parent.pricelist_id,product_id,product_qty,product_uom,parent.partner_id, parent.date_order,parent.fiscal_position,date_planned,name,False,parent.state,context)"/> -->
-                                    <field name="price_unit"/>
-<!--                                    <field name="taxes_id" widget="many2many_tags" domain="[('parent_id','=',False),('type_tax_use','!=','sale')]"/> -->
-                                    <field name="price_subtotal"/>
-                                    <field name="state" invisible='1'/>
-                                    <field name="create_uid"/>
-                                    <field name="payed"/>
-                                    <field name="delivered"/>
                                 </tree>
                             </field>
                             <group class="oe_subtotal_footer oe_right">
-                                <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+<!--                                <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                                 <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                <div class="oe_subtotal_footer_separator oe_inline">
+-->
+                                <div class="oe_subtotal_footer_separator oe_inline" >
                                     <label for="amount_total"/>
                                     <button name="onchange_order_line"
                                             states="draft" string="(update)" type="object" class="oe_edit_only oe_link"/>

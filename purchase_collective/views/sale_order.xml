@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="0">
+        <record id="view_form_sale_order_cp" model="ir.ui.view">
+            <field name="name">sale order collective purchase extension</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+              <field name="partner_id" position="before" >
+                <group>  
+                    <field name="is_cp" string="Is Collective Purchase" help="Is part o a collective Purchase" groups="purchase_collective.group_purchase_collective_manager"/>
+                    <field name="cp_order_id" string="Collective Purchase wich this order belogns" groups="purchase_collective.group_purchase_collective_manager"/>
+                </group>  
+              </field>
+            </field>
+        </record>
+    </data>
+</openerp> 
