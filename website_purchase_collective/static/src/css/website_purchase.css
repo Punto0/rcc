@@ -395,7 +395,7 @@ label.css_not_available {
 
 label.css_attribute_color.css_not_available {
   opacity: 1;
-  background-image: url("/website_sale/static/src/img/redcross.png");
+  background-image: url("/website_purchase_collective/static/src/img/redcross.png");
   background-size: cover;
 }
 
@@ -522,3 +522,4 @@ ul.wizard li:first-child {
   padding-left: 15px;
   border-radius: 4px 0 0 4px;
 }
+
