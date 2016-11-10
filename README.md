@@ -31,17 +31,19 @@ La plantilla xml de las páginas se encuentran en website_purchase_collective/vi
             <template id="orders_followup" name="Purchase Order"> línea 1185
             Esta página llama a la plantilla del carro, que está integrado en la página:
             <template id="cart" name="Shopping Cart"> línea 1281
-            Esta plantilla ejecuta javascript en Website_purchas_collective/src/js/website_purchase.js
+            Esta plantilla ejecuta javascript en Website_purchas_collective/static/src/js/website_purchase.js
     
      -- Página de checkout /purchase/checkout -- Formulario para info del comprador
             <template id="checkout"> linea 703
+            ejecuta javascript jshipping 
     
      -- Página de pago /purchase/payment -- Confirmar y elegir la forma de pago:
             <template id="payment"> linea 882
-            Esta plantilla ejecuta javascript en webite_purchase_collective/src/js/website_payment.js
+            Esta plantilla ejecuta javascript en webite_purchase_collective/static/src/js/website_payment.js
             Después de esto se redirige a la página correspondiente del módulo de pago elegido.
             
-            
+Los css se encuentran en website_purchase_collective/static/src/css/website_purchase.css
+y las clases de odoo en website_purchase_collective/static/src/css/website_purchase.sass
             
             
 
