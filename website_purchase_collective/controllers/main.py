@@ -384,22 +384,23 @@ class website_purchase(http.Controller):
         ['/collective_purchase/orders/<int:order_id>'], type='http', auth="public",
         website=True)
     def supplier_orders_followup(self, order_id=None):
+        request.website.purchase_reset()
         domain = [
         #    ('state', 'not in', ['draft', 'cancel']),
             ('id', '=', order_id)
         ]
         order = request.env['purchase_collective.order'].search(domain)
         products = request.env['product.template'].search([
-            ('seller_id', '=', order.partner_id.id),
+            ('seller_id','=',order.partner_id.id), # estas condiciones no se cumplen
             ('purchase_ok','=',True)
         ])
         #logging.info("Products : %s " %products) # debug
-        # Creamos un website_sale 
-        #context['cp_parent_id'] = order.id 
-        # website_order = request.website.purchase_get_order(force_create=1, context=context)
-        # Añadimos los productos como lineas de la orden
+
         for p in products:
-            request.website.purchase_get_order(force_create=1)._cart_update(product_id=p.id, add_qty=0, set_qty=0)
+            # la busqueda por seller_id falla, nos aseguramos que los productos son del supplier
+            logging.info("Product %s seller %s order supplier %s" %(p.name, p.seller_id.id, order.partner_id))
+            if p.seller_id.id == order.partner_id.id:
+              request.website.purchase_get_order(force_create=1)._cart_update(product_id=p.id, add_qty=1, set_qty=1)
         
         request.session['cp_order_id'] = order.id
         return request.website.render(
