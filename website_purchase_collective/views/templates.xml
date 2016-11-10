@@ -9,8 +9,8 @@
       <link rel='stylesheet' href='/website_purchase_collective/static/src/css/website_purchase.css'/>
       <link rel='stylesheet' href='/website_purchase_collective/static/src/css/website_mail.css'/>
       <script type="text/javascript" src="/website_purchase_collective/static/src/js/website_purchase.js"></script>
-<!--      <script type="text/javascript" src="/website_sale/static/src/js/website_sale_payment.js"></script>
-      <script type="text/javascript" src="/website_sale/static/src/js/website_sale_validate.js"></script>
+     <script type="text/javascript" src="/website_purchase_collective/sale/static/src/js/website_purchase_payment.js"></script>
+<!--      <script type="text/javascript" src="/website_sale/static/src/js/website_sale_validate.js"></script>
       <script type="text/javascript" src="/website_sale/static/src/js/website_sale_tour_buy.js"></script>
       <script type="text/javascript" src="/website_sale/static/src/js/website_sale_tracking.js"></script>
 -->
@@ -113,7 +113,7 @@
 <template id="products" name="Products">
   <t t-call="website.layout">
       <t t-set="additional_title">Shop</t>
-      <div id="wrap" class="js_sale">
+      <div id="wrap" class="js_purchase">
        <div class="oe_structure"/>
         <div class="container oe_website_purchase">
           <div class="products_pager">
@@ -702,9 +702,9 @@
 <!-- /shop/checkout -->
 <template id="checkout">
   <t t-call="website.layout">
-    <t t-set="additional_title">Shop - Checkout</t>
+    <t t-set="additional_title">Checkout</t>
     <div id="wrap">
-      <div class="container oe_website_sale">
+      <div class="container oe_website_purchase">
           <ul class="wizard pull-right">
               <li><a href="/shop/cart" class="text-success">Review Order<span class="chevron"></span></a></li>
               <li class="text-primary">Shipping &amp; Billing<span class="chevron"></span></li>
@@ -991,7 +991,7 @@
           </div>
           <div class="js_payment mb64 row" t-if="not website_purchase_order.amount_total" id="payment_method">
             <div class="col-lg-8 col-sm-8">
-              <form target="_self" action="/purchase/shop/validate" method="post" class="pull-right">
+              <form target="_self" action="/shop/validate" method="post" class="pull-right">
                   <a style="width:100px;" class="btn btn-primary a-submit">
                     <span>Pay Now <span class="fa fa-long-arrow-right"></span></span>
                   </a>
@@ -1185,7 +1185,7 @@
     <template id="orders_followup" name="Purchase Order">
       <t t-call="website.layout">
         <div id="wrap">
-            <div class="container oe_website_sale">
+            <div class="container oe_website_purchase">
               <div class="oe_structure">
                 <div class="row">
                     <div class="col-sm-4">
@@ -1265,7 +1265,7 @@
                       <hr/>  
                       <div class="row">
                         <!-- Insertar plantilla del carro de compra y seguir con el proceso en website_sale -->
-                        <t t-call="website_purchase_collective.cart"/>
+                        <t t-call="website_purchase_collective.cart_red"/>
                       </div>
 
                     </div>
@@ -1277,8 +1277,21 @@
       </t>
     </template>
 
-<!-- /shop/cart -->
-<template id="cart" name="Shopping Cart">
+<!-- /purchase/cart -->
+    <template id="cart" name="My cart">
+      <t t-call="website.layout">
+        <div id="wrap">
+            <div class="container oe_website_purchase">
+              <div class="oe_structure">
+                  <t t-call="website_purchase_collective.cart_red"/>
+              </div>
+            <div class="oe_structure mb32"/>
+          </div>
+        </div>
+      </t>
+    </template>
+
+<template id="cart_red" name="Shopping Cart">
       <div id="wrap">
         <div class="container oe_website_purchase">
 
@@ -1363,8 +1376,8 @@
                   </ul>
                   <h4>Secure Payment</h4>
                   <ul class="list-unstyled mb32">
-                      <li>&#9745; Ídem</li>
-                      <li>&#9745; Ídem</li>
+                      <li>&#9745; linea 1379 views/templates.xml</li>
+                      <li>&#9745; template : cart_red </li>
                   </ul>
               </div>
           </div>

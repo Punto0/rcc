@@ -121,7 +121,7 @@ $('.oe_website_purchase').each(function () {
         return false;
     });
 
-    $('.oe_website_purchases .a-submit, #comment .a-submit').off('click').on('click', function () {
+    $('.oe_website_purchase .a-submit, #comment .a-submit').off('click').on('click', function () {
         $(this).closest('form').submit();
     });
 
