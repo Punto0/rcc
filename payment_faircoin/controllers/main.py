@@ -135,7 +135,7 @@ class FaircoinController(http.Controller):
     @http.route('/payment/faircoin/form_validate', type='http', auth='none')
     def faircoin_form_feedback(self, **post):
         #cr, uid, context, session = request.cr, SUPERUSER_ID, request.context, request.session
-        _logger.debug('IMPORTANTE: Called /payment/faircoin/form_validate with post data %s', pprint.pformat(post))  # debug
+        _logger.debug('IMPORTANTE: Called /payment/faircoin/form_validate with post data %s' %pprint.pformat(post))  # debug
         #request.registry['payment.transaction'].form_feedback(cr, uid, post, 'electrum', context)
 
         return werkzeug.utils.redirect(post.pop('return_url', '/'))
@@ -145,7 +145,8 @@ class FaircoinController(http.Controller):
     def faircoin_payment_form(self, **post):
         """ Render the faircoin payment screen and notify the daemon with a new request """
         cr, uid, context, session = request.cr, SUPERUSER_ID, request.context, request.session
-        _logger.debug('Begin render form with post data %s', pprint.pformat(post))  # debug
+        _logger.debug('Begin /payment/faircoin/payment_form -- Post :') 
+        _logger.debug(' %s ' %pprint.pformat(post))  # debug
         reference = post.get('item_number')
         # get the address and do a request
         tx = None
@@ -170,7 +171,7 @@ class FaircoinController(http.Controller):
                  _logger.error(" %d %s" %(value,message))
                  return werkzeug.utils.redirect(return_url) 
             try:
-	              # Here we go
+                # Here we go
                 address, uri = f(amount, self.confirmations, self.expires_in, self.merchant_password, reference, post.get('seller_address'))
             except socket.error, (value,message): 
                 _logger.error("ERROR: Can not comunicate with the Payment Daemon")
@@ -180,6 +181,7 @@ class FaircoinController(http.Controller):
                 return werkzeug.utils.redirect(return_url)  
     
             _logger.info('Received Faircoin address : %s and uri : %s for reference: %s' %(address,uri,reference))
+            order_obj.payment_tx_id.state = 'pending'
             # Make the qr code image and save it in the database
             qr = qrcode.QRCode()
             qr.add_data(uri)
@@ -190,15 +192,14 @@ class FaircoinController(http.Controller):
             output.seek(0)
             output_s = output.read()
             b64 = base64.b64encode(output_s).decode()
-            order_obj.write({'qrcode': b64}, context = context)
-            order_obj.write({'fcaddress' : address}, context = context)
-            # Setea como pending el sale order
-            request.registry['payment.transaction'].form_feedback(cr, uid, post, 'faircoin', context)
-
-
+            order_obj.write({'qrcode': b64, 'fcaddress' : address }, context = context)
+            #order_obj.write({'fcaddress' : address}, context = context)
+            # Setea como pending la transaccion
+            #request.registry['payment.transaction'].form_feedback(cr, uid, post, 'faircoin', context)
 
         #return werkzeug.utils.redirect(self._get_return_url(**post))
         # Retorna una template renderizada con el header y el footer
+        _logger.debug('tx state : %s' %tx.state)
         return request.website.render('payment_faircoin.payment_form', {
                 'amount' : amount,
                 'address' : address,

@@ -170,10 +170,10 @@ class website_purchase(http.Controller):
         return domain
     
     @http.route([
-        '/collective_purchase/products',
-        '/collective_purchase/products/<int:page>',
-        '/shop/category/<model("product.public.category"):category>',
-        '/shop/category/<model("product.public.category"):category>/page/<int:page>'
+        '/purchase/products',
+        '/purchase/products/<int:page>',
+        '/purchase/category/<model("product.public.category"):category>',
+        '/purchase/category/<model("product.public.category"):category>/page/<int:page>'
     ], type='http', auth="public", website=True)
     def shop(self, page=0, category=None, search='', **post):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
@@ -372,16 +372,14 @@ class website_purchase(http.Controller):
         ])
         return quotations
 
-    @http.route(
-        ['/collective_purchase/open'], type='http', auth="public",
-        website=True)
+    @http.route(['/purchase/open','/purchase'], type='http', auth="public", website=True)
     def request_quotations(self):
         quotations = {'request_quotations': self._prepare_request_quotations()}
         return request.website.render(
             'website_purchase_collective.request_quotations_only', quotations)
 
     @http.route(
-        ['/collective_purchase/orders/<int:order_id>'], type='http', auth="public",
+        ['/purchase/orders/<int:order_id>'], type='http', auth="public",
         website=True)
     def supplier_orders_followup(self, order_id=None):
         request.website.purchase_reset()
@@ -391,16 +389,16 @@ class website_purchase(http.Controller):
         ]
         order = request.env['purchase_collective.order'].search(domain)
         products = request.env['product.template'].search([
-            ('seller_id','=',order.partner_id.id), # estas condiciones no se cumplen
+            ('seller_id','=',order.partner_id.id), 
             ('purchase_ok','=',True)
         ])
         #logging.info("Products : %s " %products) # debug
 
         for p in products:
             # la busqueda por seller_id falla, nos aseguramos que los productos son del supplier
-            logging.info("Product %s seller %s order supplier %s" %(p.name, p.seller_id.id, order.partner_id))
-            if p.seller_id.id == order.partner_id.id:
-              request.website.purchase_get_order(force_create=1)._cart_update(product_id=p.id, add_qty=1, set_qty=1)
+            #logging.info("Product %s seller %s order supplier %s" %(p.name, p.seller_id.id, order.partner_id))
+            #if p.seller_id.id == order.partner_id.id:
+              request.website.purchase_get_order(force_create=1)._cart_update(product_id=p.id, set_qty=0)
         
         request.session['cp_order_id'] = order.id
         return request.website.render(
@@ -435,7 +433,7 @@ class website_purchase(http.Controller):
         if not order or order.state != 'draft':
             request.session['purchase_order_id'] = None
             request.session['purchase_transaction_id'] = None
-            return request.redirect('/purchase')
+            return request.redirect('/purchase/open')
 
         # if transaction pending / done: redirect to confirmation
         tx = context.get('website_purchase_transaction')
@@ -682,12 +680,12 @@ class website_purchase(http.Controller):
 
     @http.route(['/purchase/confirm_order'], type='http', auth="public", website=True)
     def confirm_order(self, **post):
-        logging.info("Confirmando orden...")
+        logging.debug("Init /purchase/confirm_order")
         cr, uid, context, registry = request.cr, request.uid, request.context, request.registry
          
         order = request.website.purchase_get_order(context=context)
         if not order:
-            return request.redirect("/collective_purchase/open")
+            return request.redirect("/purchase/open")
           
         redirection = self.checkout_redirection(order)
         if redirection:
@@ -710,12 +708,12 @@ class website_purchase(http.Controller):
         cp_order_id = request.session.get('cp_order_id')
         cp_obj = request.registry.get('purchase_collective.order')
         cp_order = cp_obj.browse(cr, SUPERUSER_ID, cp_order_id, context=context)
-        logging.info("Actualizando ordenes - cp : %s -- sale : %s " %(cp_order_id, order.id))
-        res = order.write( { 'cp_order_id' : cp_order_id } )
-        logging.info("order write res : %s" %res) 
-        res = cp_order.write( { 'sales_order_lines' : [(4, order.id)] } )
-        logging.info("cp order write res : %s" %res)
-
+        logging.debug("Actualizando ordenes - cp : %s -- sale : %s " %(cp_order_id, order.id))
+        res = order.update( { 'cp_order_id' : cp_order_id } )
+        logging.debug("sale order write res : %s" %res) 
+        #res = cp_order.update( { 'sales_order_lines' : [(4, order.id)] } )
+        #logging.debug("cp order write res : %s" %res)
+        logging.debug("Final /purchase/confirm_order")    
         return request.redirect("/purchase/payment")
 
     #------------------------------------------------------
@@ -733,7 +731,7 @@ class website_purchase(http.Controller):
            did go to a payment.acquirer website but closed the tab without
            paying / canceling
         """
-        logging.info("End payment controller") #debug
+        logging.debug("Start /purchase/payment") #debug
         cr, uid, context = request.cr, request.uid, request.context
         payment_obj = request.registry.get('payment.acquirer')
         sale_order_obj = request.registry.get('sale.order')
@@ -780,7 +778,7 @@ class website_purchase(http.Controller):
 
         # Reset sessions id's -- A partir de aqui no se pueden modificar las lineas del pedido
         #request.website.purchase_reset()        
-        logging.info("End payment controller") #debug
+        logging.info("End /purchase/payment") #debug
         return request.website.render("website_purchase_collective.payment", values)
 
  

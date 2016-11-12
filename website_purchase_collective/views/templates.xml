@@ -10,8 +10,8 @@
       <link rel='stylesheet' href='/website_purchase_collective/static/src/css/website_mail.css'/>
       <script type="text/javascript" src="/website_purchase_collective/static/src/js/website_purchase.js"></script>
       <script type="text/javascript" src="/website_purchase_collective/static/src/js/website_purchase_payment.js"></script>
-      <script type="text/javascript" src="/website_purchase_collective/static/src/js/website_purchase_validate.js"></script>
 <!--
+      <script type="text/javascript" src="/website_purchase_collective/static/src/js/website_purchase_validate.js"></script>
       <script type="text/javascript" src="/website_sale/static/src/js/website_sale_tour_buy.js"></script>
       <script type="text/javascript" src="/website_sale/static/src/js/website_sale_tracking.js"></script>
 -->
@@ -1018,20 +1018,21 @@
           </ul>
           <div class="row">
               <center>
-              <h3>Thank you for your order (Ref: <em t-field="order.name" />) at FairMarket</h3>
               <div class="col-md-8 oe_cart">
                   <div class="oe_website_purchase_tx_status" t-att-data-order-id="order.id" style="background-color:#f0f0fa">
-                      <div class="my_payment_form" style="background-color:#f0f0fa" t-if="order.amount_total"> 
-                          <h5>Please, pay with this FairCoin transaction :</h5>
-                          <h3>Send <strong><em t-field="order.amount_total" /></strong> to the FairCoin address <strong><em t-field="order.fcaddress" /></strong></h3>
-                          <span t-field="order.qrcode" t-field-options='{"widget": "image"}' />
                       <p>This page will be updated when the payment has been confirmed.</p>
                       <p>We will accept the payment when we detect one confirmation on the blockchain.</p>      
                       <p>Order Status : <em t-field="order.state"/></p>
-                      </div>
+                  </div>
+                  <div class="my_payment_form" style="background-color:#f0f0fa" t-if="order.amount_total"> 
+                          <h3>Thank you for your order (Ref: <em t-field="order.name" />) at FairMarket</h3>
+                          <h5>Please, pay with this FairCoin transaction :</h5>
+                          <h3>Send <strong><em t-field="order.amount_total" /></strong> to the FairCoin address <strong><em t-field="order.fcaddress" /></strong></h3>
+                          <span t-field="order.qrcode" t-field-options='{"widget": "image"}' />
+
                       <div class="oe_clearfix"/>
                       <div class="oe_structure"/>
-                 </div>
+                  </div>
                  <div class="my_payment_form" style="background-color:#f0f0fa" t-if="order.amount_total == 0">
                       <p>Your partner will comunicate with you as soon as posible.</p>
                  </div>
@@ -1145,7 +1146,7 @@
                 <t t-foreach="request_quotations" t-as="request_quotation">
                     <tr t-att-class="'hidden to_hide' if request_quotation.state!='sent' and request_quotation_index &gt; 4 else ''">
                         <td>
-                            <a t-att-href="'/collective_purchase/orders/'+str(request_quotation.id)"><t t-esc="request_quotation.name"/></a>
+                            <a t-att-href="'/purchase/orders/'+str(request_quotation.id)"><t t-esc="request_quotation.name"/></a>
                         </td>
                         <td><t t-esc="request_quotation.partner_id.name" /></td> 
                         <td><t t-esc="request_quotation.create_uid.name" /></td> 
@@ -1191,7 +1192,7 @@
                 <div class="row">
                     <div class="col-sm-4">
                         <ol class="breadcrumb mt8">
-                            <li><a href="/collective_purchase/open">All open orders</a></li>
+                            <li><a href="/purchase/open">All open orders</a></li>
                             <li>
                               <t t-if="order.state in ['draft']">
                                   Open Order

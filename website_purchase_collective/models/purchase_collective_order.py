@@ -197,7 +197,6 @@ class website(orm.Model):
                         values['fiscal_position'], [[6, 0, order_lines]], context=context)['value'])
 
                 values['partner_id'] = partner.id
-                purchase_order_obj.write(cr, SUPERUSER_ID, [purchase_order_id], values, context=context)
 
                 if flag_pricelist or values.get('fiscal_position', False) != fiscal_position:
                     update_pricelist = True
@@ -205,15 +204,15 @@ class website(orm.Model):
             # update the pricelist
             if update_pricelist:
                 values = {'pricelist_id': pricelist_id}
-                #values.update(purchase_order.onchange_pricelist_id(pricelist_id, None)['value'])
-                purchase_order.write(values)
-                #for line in purchase_order.order_line:
-                    #if line.exists():
-                        #purchase_order._cart_update(product_id=line.product_id.id, line_id=line.id, add_qty=0)
+                values.update(purchase_order.onchange_pricelist_id(pricelist_id, None)['value'])
+                purchase_order.update(values)
+                for line in purchase_order.order_line:
+                    if line.exists():
+                        purchase_order._cart_update(product_id=line.product_id.id, line_id=line.id, add_qty=0)
 
             # update browse record
-            #if (code and code != purchase_order.pricelist_id.code) or purchase_order.partner_id.id !=  partner.id:
-            purchase_order = purchase_order_obj.browse(cr, SUPERUSER_ID, purchase_order.id, context=context)
+            if (code and code != purchase_order.pricelist_id.code) or purchase_order.partner_id.id !=  partner.id:
+                purchase_order = purchase_order_obj.browse(cr, SUPERUSER_ID, purchase_order.id, context=context)
 
         else:
             request.session['purchase_order_id'] = None
@@ -239,5 +238,3 @@ class website(orm.Model):
             'purchase_order_code_pricelist_id': False,
             'cp_order_id': False,   
         })
-
-

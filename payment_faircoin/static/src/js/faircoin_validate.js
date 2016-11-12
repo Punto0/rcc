@@ -11,9 +11,8 @@ $(document).ready(function () {
         return openerp.jsonRpc('/shop/payment/get_status/' + order_id, 'call', {
         }).then(function (result) {
             var tx_node = $('div.oe_faircoin_tx_status');
-            _poll_nbr += 0;
             var txt ="Empty message"; 
-            if (result.state == 'pending' && result.validation == 'automatic' && _poll_nbr <= 1000) {
+            if (result.state == 'pending' || result.state == 'draft'){
                 var txt = result.mesage;
                 setTimeout(function () {
                     payment_transaction_poll_status();
@@ -21,11 +20,10 @@ $(document).ready(function () {
             }
             else {
                 txt = result.message;
-                txt = "<h2>Thank you, your transaction ahs been broadcasted.</h2><p>Your partner will contact with you as soon as posible</p>";
+                txt = result.state + "<h2>Thank you, your transaction has been confirmed.</h2><p>Your partner will contact with you as soon as posible</p>";
             }
             tx_node.html(txt);
         });
     }
-
     payment_transaction_poll_status();
 });

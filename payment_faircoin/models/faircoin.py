@@ -105,8 +105,8 @@ class AcquirerFaircoin(osv.Model):
         return fees
 
     def faircoin_form_generate_values(self, cr, uid, id, partner_values, tx_values, context=None):
-        _logger.debug('Begin faircoin_form_generate_values. partner_values %s' %partner_values)
-        _logger.debug('tx_values %s' %tx_values)
+        _logger.debug('Begin faircoin_form_generate_values')
+        #_logger.debug('tx_values %s' %tx_values)
         base_url = self.pool['ir.config_parameter'].get_param(cr, SUPERUSER_ID, 'web.base.url')
         acquirer = self.browse(cr, uid, id, context=context)
 
@@ -128,9 +128,9 @@ class AcquirerFaircoin(osv.Model):
                     for bank in bank_ids:
 	              if bank.bank_name == "FairCoin BlockChain":
                         faircoin_address = bank.acc_number
-            order.company_id = company # Cambia la compañia de fairmarket al partner correspondiente
-            order.user_id = company.user_ids[0] # Cambia el salesman de la orden para que tenga acceso. User: All leads
-            order.faircoin_address = faircoin_address
+            #order.company_id = company # Cambia la compañia de fairmarket al partner correspondiente
+            #order.user_id = company.user_ids[0] # Cambia el salesman de la orden para que tenga acceso. User: All leads
+            #order.faircoin_address = faircoin_address
             #warehouse_ids = self.pool['stock.warehouse'].search(cr, uid, [('company_id', '=', company.id)], context=context) #Cambia el almacén para que el partner pueda hacer la transferencia
             #if warehouse_ids:
                  #order.warehouse_id = warehouse_ids[0]                                                                     
@@ -151,49 +151,23 @@ class AcquirerFaircoin(osv.Model):
 
 
             'password' : '',
-            'return': '%s' % urlparse.urljoin(base_url, FaircoinController._return_url),
+            'return_url': '%s' % urlparse.urljoin(base_url, FaircoinController._return_url),
             'notify_url': '%s' % urlparse.urljoin(base_url, FaircoinController._notify_url),
             'cancel_return': '%s' % urlparse.urljoin(base_url, FaircoinController._cancel_url),
         })
+
         if acquirer.fees_active:
             faircoin_tx_values['handling'] = '%.2f' % faircoin_tx_values.pop('fees', 0.0)
         if faircoin_tx_values.get('return_url'):
             faircoin_tx_values['custom'] = json.dumps({'return_url': '%s' % faircoin_tx_values.pop('return_url')})
+
+        _logger.debug('End faircoin_form_generate_values')
         return partner_values, faircoin_tx_values
 
     def faircoin_get_form_action_url(self, cr, uid, id, context=None):
         acquirer = self.browse(cr, uid, id, context=context)
         return self._get_faircoin_urls(cr, uid, acquirer.environment, context=context)['faircoin_payment_form_url']
-"""
-    def _faircoin_s2s_get_access_token(self, cr, uid, ids, context=None):
-   
-#        Note: see # see http://stackoverflow.com/questions/2407126/python-urllib2-basic-auth-problem for explanation why we use Authorization header instead of urllib2 password manager
-   
-        res = dict.fromkeys(ids, False)
-        parameters = werkzeug.url_encode({'grant_type': 'client_credentials'})
 
-        for acquirer in self.browse(cr, uid, ids, context=context):
-            tx_url = self._get_faircoin_urls(cr, uid, acquirer.environment)['faircoin_rest_url']
-            request = urllib2.Request(tx_url, parameters)
-
-            # add other headers (https://developer.electrum.com/webapps/developer/docs/integration/direct/make-your-first-call/)
-            request.add_header('Accept', 'application/json')
-            request.add_header('Accept-Language', 'en_US')
-
-            # add authorization header
-            base64string = base64.encodestring('%s:%s' % (
-                acquirer.faircoin_api_username,
-                acquirer.faircoin_api_password)
-            ).replace('\n', '')
-            request.add_header("Authorization", "Basic %s" % base64string)
-
-            request = urllib2.urlopen(request)
-            result = request.read()
-            res[acquirer.id] = json.loads(result).get('access_token')
-            request.close()
-        return res
-
-"""
 class TxFaircoin(osv.Model):
     _inherit = 'payment.transaction'
 
@@ -207,7 +181,7 @@ class TxFaircoin(osv.Model):
     # --------------------------------------------------
 
     def faircoin_form_get_tx_from_data(self, cr, uid, data, context=None):
-	_logger.debug('Begin faircoin_form_get_tx. Data received %s' %data)
+        _logger.debug('Begin faircoin_form_get_tx_from_data. Data received %s' %data)
 	reference = data.get('item_number')
         #paid = data.get("paid")
         if not reference:
@@ -224,11 +198,10 @@ class TxFaircoin(osv.Model):
                 error_msg += '; multiple order found'
             _logger.error(error_msg)
             raise ValidationError(error_msg)
-
+      	_logger.debug('End faircoin_form_get_tx_from_data')
         return self.browse(cr, uid, tx_ids[0], context=context)
 
     def _faircoin_form_get_invalid_parameters(self, cr, uid, tx, data, context=None):
-        _logger.debug('Begin faircoin_form_invalid_parameters. Data received : %s ' %data)
         invalid_parameters = []
         """if data.get('notify_version')[0] != '1.0':
             _logger.warning(
@@ -269,54 +242,66 @@ class TxFaircoin(osv.Model):
         return invalid_parameters
 	
     def _faircoin_form_validate(self, cr, uid, tx, data, context=None):
-        _logger.debug('Begin faircoin_form_validate. Data received : %s ' %data)
+        _logger.debug('Begin faircoin_form_validate. Data received :')
+        _logger.debug('%s' %data)
+        _logger.debug('tx :')
+        _logger.debug('%s' %tx)
+        
         status = data.get('payment_status')
 	reference = data.get('item_number')
 
-        tx_ids = self.pool['payment.transaction'].search(cr, uid, [('reference', '=', reference)], context=context)
-        if not tx_ids or len(tx_ids) > 1:
-            error_msg = 'Faircoin: received data for reference %s' % (reference)
-            if not tx_ids:
-                error_msg += '; no order found'
-            else:
-                error_msg += '; multiple order found'
-            _logger.error(error_msg)
-            raise ValidationError(error_msg)
+        #tx_ids = self.pool['payment.transaction'].search(cr, uid, [('reference', '=', reference)], context=context)
+        #if not tx_ids or len(tx_ids) > 1:
+        #    error_msg = 'Faircoin: received data for reference %s' % (reference)
+        #    if not tx_ids:
+        #        error_msg += '; no order found'
+        #    else:
+        #        error_msg += '; multiple order found'
+        #    _logger.error(error_msg)
+        #    raise ValidationError(error_msg)
 
-        txr = self.pool.get('payment.transaction').browse(cr, uid, tx_ids[0], context=context)
-        #order = self.pool.get('sale.order'].browse(cr, uid, [txr.sale_order_id.id], context=context)
+        #txr = self.pool.get('payment.transaction').browse(cr, uid, tx_ids[0], context=context)
+        order_id = self.pool.get('sale.order').search(cr, uid, [('name','=',reference)], context=context)
+        order = self.pool.get('sale.order').browse(cr, uid, order_id, context=context)
+        txr = order.payment_tx_id
         if status in ['Completed', 'Processed']:
-            _logger.info('Validated Faircoin payment for tx %s: set as done' %(reference))
+            _logger.info('tx state set done %s' %(reference))
             data.update(state='done', date_validate=data.get('payment_date', fields.datetime.now()))
-            if txr.sale_order_id and txr.sale_order_id.state in ['draft', 'sent','pending']:
-                self.pool['sale.order'].action_button_confirm(cr, SUPERUSER_ID, [txr.sale_order_id.id], context=context)
-                self.pool['sale.order'].force_quotation_send(cr, SUPERUSER_ID, [txr.sale_order_id.id], context=context)
+            #if txr.sale_order_id and txr.sale_order_id.state in ['draft', 'sent','pending']:
+            #self.pool['sale.order'].action_button_confirm(cr, SUPERUSER_ID, [txr.sale_order_id.id], context=context)
+            #self.pool['sale.order'].force_quotation_send(cr, SUPERUSER_ID, [txr.sale_order_id.id], context=context)
+            _logger.debug('%s' %data)
+            return txr.write(data)
         elif status in ['Pending', 'Expired']:
-            _logger.info('Received notification for Faircoin payment %s: set as cancelled' %(reference))
+            _logger.info('tx state from pending, expired to cancel %s' %(reference))
             data.update(state='cancel', state_message=data.get('cancelling_reason', ''))
-            if txr.sale_order_id:
-                self.pool['sale.order'].action_cancel(cr, SUPERUSER_ID, [txr.sale_order_id.id], context=context)
+            #if tx.sale_order_id:
+            #    self.pool['sale.order'].action_cancel(cr, SUPERUSER_ID, [txr.sale_order_id.id], context=context)
                 # ToDo: Send a email notiying the cancel status in the order
+            return txr.write(data)
 	elif status in ['']:
-            _logger.info('Validated faircoin payment for tx %s: set as pending' %(reference))
+            _logger.info('tx state from null to pending %s' %(reference))
             data.update(state='pending')
-            if txr.sale_order_id:
-                self.pool['sale.order'].force_quotation_send(cr, uid, [txr.sale_order_id.id], context=context)
+            #if txr.sale_order_id:
+            #self.pool['sale.order'].force_quotation_send(cr, uid, [txr.sale_order_id.id], context=context)
+            return txr.write(data)
 	elif status in ['Draft']:
-            _logger.info('Validated faircoin payment for tx %s: set as pending' % (reference))
+            _logger.info('tx state from draft to pending %s' % (reference))
             data.update(state='pending')
-            if txr.sale_order_id:
-                self.pool['sale.order'].force_quotation_send(cr, uid, [txr.sale_order_id.id], context=context)
+            #if txr.sale_order_id:
+            #    self.pool['sale.order'].force_quotation_send(cr, uid, [txr.sale_order_id.id], context=context)
+            return txr.write(data)
 	elif status in [None]:
-            _logger.info('Validated faircoin payment for tx %s: set as pending' % (reference))
+            _logger.info('from null to pending' % (reference))
             data.update(state='pending')
-            if txr.sale_order_id:
-                self.pool['sale.order'].force_quotation_send(cr, uid, [txr.sale_order_id.id], context=context)
+            #if txr.sale_order_id:
+            #  self.pool['sale.order'].force_quotation_send(cr, uid, [txr.sale_order_id.id], context=context)
+            return txr.write(data)
         else:
             error = 'Received unrecognized status for Faircoin payment %s: %s, set as error' % (reference, status)
             _logger.error(error)
             data.update(state='error', state_message=error)
-        return txr.write(data)
+            return txr.write(data)
 
     # --------------------------------------------------
     # SERVER2SERVER RELATED METHODS
