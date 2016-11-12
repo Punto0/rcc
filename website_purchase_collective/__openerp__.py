@@ -10,7 +10,7 @@ Web para las Compras Colectivas
 
         """,
     'author': 'Red de Compras Colectivas - FairCoop - Punto0',
-    'depends': ['website', 'purchase_collective', 'payment'],
+    'depends': ['website','website_sale','purchase_collective','payment','product'],
     'data': [
         'data/data.xml',
         'views/views.xml',

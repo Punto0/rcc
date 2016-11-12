@@ -687,7 +687,7 @@ class website_purchase(http.Controller):
          
         order = request.website.purchase_get_order(context=context)
         if not order:
-            return request.redirect("/shop")
+            return request.redirect("/collective_purchase/open")
           
         redirection = self.checkout_redirection(order)
         if redirection:
@@ -780,7 +780,7 @@ class website_purchase(http.Controller):
 
         # Reset sessions id's -- A partir de aqui no se pueden modificar las lineas del pedido
         #request.website.purchase_reset()        
-        logging.info("End payment controller")#debug
+        logging.info("End payment controller") #debug
         return request.website.render("website_purchase_collective.payment", values)
 
  

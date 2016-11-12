@@ -25,7 +25,7 @@ El Usuario que crea la orden es el encargado de distribuir los productos al rest
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ["purchase", "sale","product",],
+    'depends': ["purchase","sale","product",],
 
     # always loaded
     'data': [

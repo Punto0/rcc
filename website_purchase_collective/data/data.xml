@@ -19,16 +19,18 @@
             <field name="parent_id" ref="menu_collective_purchase"/>
             <field name="sequence" type="int">20</field>
         </record>
+<!--
         <record id="action_open_website" model="ir.actions.act_url">
             <field name="name">Website Purchases</field>
             <field name="target">self</field>
             <field name="url">/purchase#tutorial.shop=true</field>
         </record>
-
+-->
+<!--
         <record id="base.open_menu" model="ir.actions.todo">
             <field name="action_id" ref="action_open_website"/>
             <field name="state">open</field>
         </record>
-
+-->
     </data>
 </openerp>

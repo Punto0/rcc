@@ -11,8 +11,8 @@ class product_template(osv.Model):
 
     _columns = {
         'cp_price': fields.property(type = 'float', digits_compute=dp.get_precision('Product Price'), 
-                                          help="Cost price for Collective Purchases. "
+                                          help="Price for Collective Purchases. "
                                                "Expressed in the default unit of measure of the product.",
-                                          string="Cost Price"),
-        'cp_ok': fields.boolean("Can be purchased in Collective Purchases")
+                                          string="Collective Purchase Price"),
+        'cp_ok': fields.boolean("The product can be sold in Collective Purchases")
     }
