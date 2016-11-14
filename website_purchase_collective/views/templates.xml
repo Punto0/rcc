@@ -9,8 +9,8 @@
       <link rel='stylesheet' href='/website_purchase_collective/static/src/css/website_purchase.css'/>
       <link rel='stylesheet' href='/website_purchase_collective/static/src/css/website_mail.css'/>
       <script type="text/javascript" src="/website_purchase_collective/static/src/js/website_purchase.js"></script>
-      <script type="text/javascript" src="/website_purchase_collective/static/src/js/website_purchase_payment.js"></script>
 <!--
+      <script type="text/javascript" src="/website_purchase_collective/static/src/js/website_purchase_payment.js"></script>
       <script type="text/javascript" src="/website_purchase_collective/static/src/js/website_purchase_validate.js"></script>
       <script type="text/javascript" src="/website_sale/static/src/js/website_sale_tour_buy.js"></script>
       <script type="text/javascript" src="/website_sale/static/src/js/website_sale_tracking.js"></script>
@@ -992,7 +992,7 @@
           </div>
           <div class="js_payment mb64 row" t-if="not website_purchase_order.amount_total" id="payment_method">
             <div class="col-lg-8 col-sm-8">
-              <form target="_self" action="/shop/validate" method="post" class="pull-right">
+              <form target="_self" action="/purhase/validate" method="post" class="pull-right">
                   <a style="width:100px;" class="btn btn-primary a-submit">
                     <span>Pay Now <span class="fa fa-long-arrow-right"></span></span>
                   </a>

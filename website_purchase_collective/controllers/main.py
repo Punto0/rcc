@@ -703,10 +703,10 @@ class website_purchase(http.Controller):
 
         order = request.website.purchase_get_order(update_pricelist=True, context=context)
         request.session['sale_order_id'] = order.id 
- 
+        
         #añadir la orden a purchase_collective.sale_order_line 
         cp_order_id = request.session.get('cp_order_id')
-        cp_obj = request.registry.get('purchase_collective.order')
+        cp_obj = request.registry.get('purchase_collective.order') 
         cp_order = cp_obj.browse(cr, SUPERUSER_ID, cp_order_id, context=context)
         logging.debug("Actualizando ordenes - cp : %s -- sale : %s " %(cp_order_id, order.id))
         res = order.update( { 'cp_order_id' : cp_order_id } )
