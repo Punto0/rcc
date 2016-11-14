@@ -21,8 +21,8 @@ $(document).ready(function () {
             else {
                 txt = result.message;
                 txt = result.state + "<h2>Thank you, your transaction has been confirmed.</h2><p>Your partner will contact with you as soon as posible</p>";
+                window.location.replace("http://rcc.punto0.org:8069/shop/payment/validate");
             }
-            window.location.replace("http://rcc.punto0.org:8069/shop/payment/validate");
             tx_node.html(txt);
         });
     }
