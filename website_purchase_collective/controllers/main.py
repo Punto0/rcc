@@ -184,7 +184,7 @@ class website_purchase(http.Controller):
 
         domain = self._get_search_domain(search, category, attrib_values)
 
-        keep = QueryURL('/collective_purchase', category=category and int(category), search=search, attrib=attrib_list)
+        keep = QueryURL('/purchase', category=category and int(category), search=search, attrib=attrib_list)
 
         if not context.get('pricelist'):
             pricelist = self.get_pricelist()
