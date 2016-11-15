@@ -387,7 +387,7 @@ class website_purchase(http.Controller):
         ['/purchase/orders/<int:order_id>'], type='http', auth="public",
         website=True)
     def supplier_orders_followup(self, order_id=None):
-        request.website.purchase_reset()
+        #request.website.purchase_reset()
         domain = [
         #    ('state', 'not in', ['draft', 'cancel']),
             ('id', '=', order_id)
@@ -785,7 +785,7 @@ class website_purchase(http.Controller):
 
         # Reset sessions id's -- A partir de aqui no se pueden modificar las lineas del pedido
         #request.website.purchase_reset()        
-        logging.info("End /purchase/payment") #debug
+        #logging.debug("End /purchase/payment") #debug
         return request.website.render("website_purchase_collective.payment", values)
 
  

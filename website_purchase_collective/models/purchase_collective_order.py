@@ -76,7 +76,8 @@ class purchase_collective_order(osv.Model):
         for so in self.browse(cr, uid, ids, context=context):
             if so.state != 'draft':
                 request.session['purchase_order_id'] = None
-                raise osv.except_osv(_('Error!'), _('It is forbidden to modify a purchase order which is not in draft status'))
+                #raise osv.except_osv(_('Error!'), _('It is forbidden to modify a purchase order which is not in draft status'))
+                request.website.purchase_reset() 
             if line_id != False:
                 line_ids = so._cart_find_product_line(product_id, line_id, context=context, **kwargs)
                 if line_ids:

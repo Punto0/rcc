@@ -1086,6 +1086,7 @@
                     }'/></h3>
                 </th>
             </tr>
+<!--
             <tr width="120" class="text-muted" id="order_total_taxes">
                 <td><abbr title="Taxes may be updated after providing shipping address">Taxes:</abbr></td>
                 <td class="text-right">
@@ -1096,6 +1097,7 @@
                     }'/>
                 </td>
             </tr>
+-->
         </thead>
     </table>
 </template>
@@ -1478,7 +1480,7 @@
 <template id="continue_shopping" inherit_id="website_purchase_collective.cart_red" customize_show="True" name="Return to order Button">
   <xpath expr="//a[@href='/purchase/checkout']" position="before">
     <t t-set="website_purchase_order" t-value="website.purchase_get_order()"/>
-    <a t-attf-href="/purchase/open/#{website_purchase_order.cp_order_id.id}" class="btn btn-default mb32">
+    <a t-attf-href="/purchase/orders/#{website_purchase_order.cp_order_id.id}" class="btn btn-default mb32">
     <span class="fa fa-long-arrow-left"/> 
     <span class="hidden-xs">Return to order</span>
     <span class="visible-xs-inline">Continue</span></a>
