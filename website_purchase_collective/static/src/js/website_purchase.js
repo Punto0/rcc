@@ -102,7 +102,7 @@ $('.oe_website_purchase').each(function () {
 
                 $input.val(data.quantity);
                 $('.js_quantity[data-line-id='+line_id+']').val(data.quantity).html(data.quantity);
-                $("#cart_total").replaceWith(data['website_purchase.total']);
+                $("#cart_total").replaceWith(data['website_purchase_collective.total']);
             });
         });
     });

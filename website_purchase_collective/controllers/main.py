@@ -312,6 +312,10 @@ class website_purchase(http.Controller):
         request.website.purchase_get_order(code=promo, context=context)
         return request.redirect("/purchase/cart")
 
+    #-----------------------------------------------
+    # Carro
+    #-----------------------------------------------
+
     @http.route(['/purchase/cart'], type='http', auth="public", website=True)
     def cart(self, **post):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
@@ -337,7 +341,7 @@ class website_purchase(http.Controller):
         return request.website.render("website_purchase_collective.cart", values)
 
     @http.route(['/purchase/cart/update'], type='http', auth="public", methods=['POST'], website=True)
-    def cart_update(self, product_id, add_qty=1, set_qty=0, **kw):
+    def cart_update(self, product_id, add_qty=None, set_qty=None, **kw):
         cr, uid, context = request.cr, request.uid, request.context
         request.website.purchase_get_order(force_create=1)._cart_update(product_id=int(product_id), add_qty=float(add_qty), set_qty=float(set_qty))
         return request.redirect("/purchase/cart")
@@ -351,15 +355,16 @@ class website_purchase(http.Controller):
             return {}
         #la línea puede estar creada o no --> Lo vemos en _cart_update
         value = order._cart_update(product_id=product_id, line_id=line_id, add_qty=add_qty, set_qty=set_qty)
-        if not order.cart_quantity:
-            request.website.purchase_reset()
-            return {}
-        if not display:
-            return None
+        #if not order.cart_quantity:
+            #request.website.purchase_reset()
+            #return {}
+        #if not display:
+            #return None
         value['cart_quantity'] = order.cart_quantity
         value['website_purchase_collective.total'] = request.website._render("website_purchase_collective.total", {
                 'website_purchase_order': request.website.purchase_get_order()
             })
+        logging.debug("cart_update_json res : %s" %(value))
         return value
 
     #-----------------------------------------------
