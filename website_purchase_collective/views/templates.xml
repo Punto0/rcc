@@ -1470,7 +1470,7 @@
                                   </div>
                               </td>
                               <td class="text-center" name="price">
-                                    <p t-esc="line.product_id.cp_price" />
+                                    <p t-esc="line.product_id.list_price" />
                                     <p t-esc="line.company_id.currency_id.name"/>
                               </td>
                               <td class="text-center">
