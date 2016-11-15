@@ -67,21 +67,22 @@ class PurchaseCollectiveOrder(models.Model):
         val_untax = 0.0  
         if order:
             cur = order.pricelist_id.currency_id
-            for line in order.order_line:
-                val = line._amount_all()
-                val_tax += val.get('amount_tax',0.0)
-                val_untax += val.get('amount_untaxed',0.0)
+            for line in order.sales_order_lines:
+                if line.state in ['sent','done','approved']: 
+                  val += line.amount_total
+                  #val_tax += val.get('amount_tax',0.0)
+                  #val_untax += val.get('amount_untaxed',0.0)
 
-            res['amount_tax']=cur.round(val_tax)
-            res['amount_untaxed']=cur.round(val_untax)
-            res['amount_total']=res['amount_untaxed'] + res['amount_tax']
+            res['amount_tax'] = cur.round(val_tax)
+            res['amount_untaxed'] = val
+            res['amount_total']= val
 
             #_logger.info("Res : %s " %res)
 
             order.write({'amount_untaxed': res['amount_untaxed']})
             order.write({'amount_tax': res['amount_tax']})
             order.write({'amount_total': res['amount_total']})
-        _logger.info("res : %s" %pprint.pformat(res))
+        _logger.info("res : %s" %(res))
         return res
     
     @api.multi 
