@@ -1229,34 +1229,15 @@
                       </div>
                     </div>
                     <div class="panel-body">
-                      <div class="mb8">
-                          <strong>Date:</strong> <span t-field="order.create_date" t-field-options='{"widget": "date"}'/>
-                      </div>
+
                       <div class='row'>
                         <div class="col-md-6">
-                          <div>
-                            <strong>Invoicing Address</strong>
+                          <div class='row'>
+                            <strong>Order Creation Date:</strong> <span t-field="order.create_date" t-field-options='{"widget": "date"}'/>
                           </div>
-                          <div>
-                            <address t-field="order.partner_id" t-field-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/>
+                          <div class='row'> 
+                            <strong>Order Deadline Date:</strong> <span t-field="order.deadline_date" t-field-options='{"widget": "date"}'/>
                           </div>
-                        </div>
-                        <div id="shipping_address" class="col-md-6">
-                          <div>
-                            <strong>Shipping Address</strong>
-                          </div>
-                          <div>
-                            <address t-field="order.partner_id" t-field-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/>
-                          </div>
-                        </div>
-                      </div>
-
-                      <hr/>
-
-                      <div class="row">
-                        <div class="col-md-6">
-                        </div>
-                        <div class="col-md-6">
                           <div class="row">
                             <div class="col-md-10 text-right">
                               <strong>Funded:</strong>
@@ -1264,19 +1245,74 @@
                             <div class="col-md-2 text-right">
                               <strong><span t-field="order.amount_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
                             </div>
-                           </div>
-                           <div class="row">
-                              <div class="col-md-10 text-right">
-                                <strong>minimun quantity to execute the order:</strong>
-                              </div>
-                              <div class="col-md-2 text-right">
-                                <strong><span t-field="order.qty_min" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
-                              </div>
-                           </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-10 text-right">
+                              <strong>Minimun quantity to execute the order:</strong>
+                            </div>
+                            <div class="col-md-2 text-right">
+                              <strong><span t-field="order.qty_min" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
+                            </div>
+                          </div>
+                        </div>  
+                        <div class="col-md-6">
+                          <div>
+                            <strong>Distribution Point</strong>
+                          </div>
+                          <div>
+                            Street : <span t-field="order.street"/>
+                          </div>
+                          <div>
+                            City : <span t-field="order.city"/>
+                          </div>
+                          <div>
+                            State : <span t-field="order.state_id.name"/>
+                          </div>
+                          <div>
+                            Country : <span t-field="order.country_id.name"/>
+                          </div>
+                          <div>
+                            Contact email : <span t-field="order.email"/>
+                          </div>
+                          <div>
+                            Phone : <span t-field="order.phone"/> -- Mobile : <span t-field="order.mobile"/> 
+                          </div>
                         </div>
                       </div>
 
-                      <hr/>  
+                     <hr/>  
+                     <div class="clearfix"/>
+
+                      <div class='row'>
+                        <div class="col-md-6">
+                          <div>
+                            <strong>Supplier</strong>
+                          </div>
+                          <div>
+                            <address t-field="order.partner_id" t-field-options='{"widget": "contact", "fields": ["address", "name","website"], "no_marker": true}'/>
+                          </div>
+                          <div>
+                            <span t-field="order.partner_id.comment"/>  
+                          </div>
+                        </div>
+                        <div id="shipping_address" class="col-md-6">
+                          <div>
+                            <strong>Responsible of the order</strong>
+                          </div>
+                          <div>
+                            <address t-field="order.create_uid" t-field-options='{"widget": "contact", "fields": ["address", "name","street","city","state","country","website"], "no_marker": true}'/>
+                          </div>
+                        </div>
+                      </div>
+
+                      <hr/>
+                      <strong>Description</strong>   
+                      <div class='row'>
+                          <span t-field="order.notes"/>
+                      </div>
+
+                      <hr/>
+
                       <div class="row">
           <h2 class="mb32">Place your order</h2>
           <div class="row">
@@ -1294,7 +1330,7 @@
                               <th>Product</th>
                               <th colspan="2">Description</th> 
                               <th><center>Price</center></th>
-                              <th>Quantity</th>
+                              <th><center>Quantity</center></th>
                           </tr>
                       </thead>
                       <tbody>
