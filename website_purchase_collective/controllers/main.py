@@ -429,6 +429,8 @@ class website_purchase(http.Controller):
 
         values = self.checkout_values()
 
+        order.cp_order_id = request.session['cp_order_id']
+
         return request.website.render("website_purchase_collective.checkout", values)
 
     def checkout_redirection(self, order):
@@ -709,7 +711,7 @@ class website_purchase(http.Controller):
         order = request.website.purchase_get_order(update_pricelist=True, context=context)
         request.session['sale_order_id'] = order.id 
         
-        #añadir la orden a purchase_collective.sale_order_line 
+        #añadir la orden a purchase_collective.sales_order_lines 
         cp_order_id = request.session.get('cp_order_id')
         cp_obj = request.registry.get('purchase_collective.order') 
         cp_order = cp_obj.browse(cr, SUPERUSER_ID, cp_order_id, context=context)
