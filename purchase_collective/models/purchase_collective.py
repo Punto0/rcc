@@ -46,7 +46,7 @@ class PurchaseCollectiveOrder(models.Model):
 
     @api.onchange('sales_order_lines') 
     def onchange_order_line(self, cr, uid, ids, args=None):
-        #_logger.info("cr: %s -- uid : %s -- ids : %s -- args: %s" %(cr,uid,ids,args))
+        _logger.info("onchange_order_lines-- ids : %s -- args: %s" %(ids,args))
 
         #cr, uid, context = self.env.cr, self.env.user, self.env.context
         #res = {}
@@ -81,7 +81,7 @@ class PurchaseCollectiveOrder(models.Model):
             order.write({'amount_untaxed': res['amount_untaxed']})
             order.write({'amount_tax': res['amount_tax']})
             order.write({'amount_total': res['amount_total']})
-
+        _logger.info("res : %s" %pprint.pformat(res))
         return res
     
     @api.multi 

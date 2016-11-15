@@ -92,17 +92,17 @@ $('.oe_website_purchase').each(function () {
                     return;
                 }
                 // Comentado para que no recargue la pagina si la cantidad es cero
-                /*if (!data.quantity) {
-                      location.reload(true);
-                    return;
-                }*/ 
+                //if (!data.quantity) {
+                      //location.reload(true);
+                    //return;
+                //} 
                 var $q = $(".my_cart_quantity");
                 $q.parent().parent().removeClass("hidden", !data.quantity);
                 $q.html(data.cart_quantity).hide().fadeIn(600);
 
                 $input.val(data.quantity);
                 $('.js_quantity[data-line-id='+line_id+']').val(data.quantity).html(data.quantity);
-                $("#cart_total").replaceWith(data['website_sale.total']);
+                $("#cart_total").replaceWith(data['website_purchase.total']);
             });
         });
     });

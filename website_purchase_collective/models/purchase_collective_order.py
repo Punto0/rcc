@@ -85,9 +85,9 @@ class purchase_collective_order(osv.Model):
             # Create line if no line with product_id can be located
             if not line_id:
                 values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=1, context=context)
-                line_id = sol.create(cr, SUPERUSER_ID, values, context=context)
+                line_id = sol.create(cr, SUPERUSER_ID, values, context=context) ####
                 if add_qty:
-                    add_qty -= 1
+                  add_qty -= 1
 
             # compute new quantity
             if set_qty:
@@ -96,7 +96,7 @@ class purchase_collective_order(osv.Model):
                 quantity = sol.browse(cr, SUPERUSER_ID, line_id, context=context).product_uom_qty + (add_qty or 0)
 
             # Remove zero of negative lines
-            if quantity > 0:
+            if quantity >= 0:
                 #sol.unlink(cr, SUPERUSER_ID, [line_id], context=context)
             #else:
                 # update line
