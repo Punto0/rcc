@@ -261,16 +261,17 @@ class TxFaircoin(osv.Model):
         #    raise ValidationError(error_msg)
 
         #txr = self.pool.get('payment.transaction').browse(cr, uid, tx_ids[0], context=context)
-        order_id = self.pool.get('sale.order').search(cr, uid, [('name','=',reference)], context=context)
+        order_id = self.pool.get('sale.order').search(cr, uid, [('name','in',reference)], context=context)
         order = self.pool.get('sale.order').browse(cr, uid, order_id, context=context)
         txr = order.payment_tx_id
         if status in ['Completed', 'Processed']:
-            _logger.info('tx state set done %s' %(reference))
-            data.update(state='done', date_validate=data.get('payment_date', fields.datetime.now()))
+            _logger.info('tx set done for reference %s' %(reference))
+            data.update(item_number=order.name,state='done',date_validate=data.get('payment_date', fields.datetime.now()),payment_status='done', amount=order.amount_total)
+
             #if txr.sale_order_id and txr.sale_order_id.state in ['draft', 'sent','pending']:
             #self.pool['sale.order'].action_button_confirm(cr, SUPERUSER_ID, [txr.sale_order_id.id], context=context)
             #self.pool['sale.order'].force_quotation_send(cr, SUPERUSER_ID, [txr.sale_order_id.id], context=context)
-            _logger.debug('%s' %data)
+            _logger.debug('writing data : %s' %data)
             return txr.write(data)
         elif status in ['Pending', 'Expired']:
             _logger.info('tx state from pending, expired to cancel %s' %(reference))

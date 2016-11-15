@@ -68,7 +68,7 @@ class PurchaseCollectiveOrder(models.Model):
         if order:
             cur = order.pricelist_id.currency_id
             for line in order.sales_order_lines:
-                if line.state in ['sent','done','approved']: 
+                if line.state in ['done','approved']: 
                   val += line.amount_total
                   #val_tax += val.get('amount_tax',0.0)
                   #val_untax += val.get('amount_untaxed',0.0)
