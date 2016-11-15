@@ -1264,7 +1264,15 @@
                             <div class="col-md-2 text-right">
                               <strong><span t-field="order.amount_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
                             </div>
-                          </div>
+                           </div>
+                           <div class="row">
+                              <div class="col-md-10 text-right">
+                                <strong>minimun quantity to execute the order:</strong>
+                              </div>
+                              <div class="col-md-2 text-right">
+                                <strong><span t-field="order.qty_min" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
+                              </div>
+                           </div>
                         </div>
                       </div>
 
@@ -1311,7 +1319,7 @@
                                   </div>
                               </td>
                               <td class="text-center" name="price">
-                                    <p t-esc="line.product_id.cp_price" />
+                                    <p t-esc="line.product_id.list_price" />
                                     <p t-esc="line.company_id.currency_id.name"/>
                               </td>
                               <td class="text-center">
