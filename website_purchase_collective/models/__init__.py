@@ -1,3 +1,3 @@
 import purchase_collective_order
-#import payment
+import payment
 import product

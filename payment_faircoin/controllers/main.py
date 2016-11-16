@@ -181,7 +181,6 @@ class FaircoinController(http.Controller):
                 return werkzeug.utils.redirect(return_url)  
     
             _logger.info('Received Faircoin address : %s and uri : %s for reference: %s' %(address,uri,reference))
-            order_obj.payment_tx_id.state = 'pending'
             # Make the qr code image and save it in the database
             qr = qrcode.QRCode()
             qr.add_data(uri)
@@ -195,11 +194,12 @@ class FaircoinController(http.Controller):
             order_obj.write({'qrcode': b64, 'fcaddress' : address }, context = context)
             #order_obj.write({'fcaddress' : address}, context = context)
             # Setea como pending la transaccion
-            #request.registry['payment.transaction'].form_feedback(cr, uid, post, 'faircoin', context)
+            #request.registry['payment.transaction'].form_feedback(cr, uid, post, 'faircoin', context) # Da error
+            order_obj.payment_tx_id.state = 'pending'
 
         #return werkzeug.utils.redirect(self._get_return_url(**post))
         # Retorna una template renderizada con el header y el footer
-        _logger.debug('tx state : %s' %tx.state)
+        #_logger.debug('tx state : %s' %tx.state)
         return request.website.render('payment_faircoin.payment_form', {
                 'amount' : amount,
                 'address' : address,

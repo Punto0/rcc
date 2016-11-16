@@ -707,9 +707,10 @@
     <div id="wrap">
       <div class="container oe_website_purchase">
           <t t-set="website_purchase_order" t-value="website.purchase_get_order()"/>
-          <t t-set="return_url" t-value="'/purchase/orders/%s' %website_purchase_order.cp_order_id.id"/>
+<!--          <t t-set="return_url" t-value="'/purchase/orders/%s' %website_purchase_order.cp_order_id.id"/> -->
+
           <ul class="wizard pull-right">
-              <li><a t-attf-href="#{return_url}" class="text-success">Review Order<span class="chevron"></span></a></li>
+              <li><a t-attf-href="/purchase/cart" class="text-success">Review Order<span class="chevron"></span></a></li>
               <li class="text-primary">Shipping &amp; Billing<span class="chevron"></span></li>
               <li class="text-muted">Payment<span class="chevron"></span></li>
               <li class="text-muted">Confirmation<span class="chevron"></span></li>
@@ -851,7 +852,7 @@
           </div>
           <div class="col-lg-offset-1 col-lg-3 col-md-3 text-muted">
               <h3 class="page-header mt16">Your Order <small>
-              <a t-attf-href="#{return_url}"><span class="fa fa-arrow-right"/> change</a></small></h3>
+              <a t-attf-href="/purchase/cart"><span class="fa fa-arrow-right"/> change</a></small></h3>
               <div class="row">
                   <div class="col-sm-6 text-right">Subtotal: </div>
                   <div class="col-sm-6"><span style="white-space: nowrap;" t-field="website_purchase_order.amount_untaxed" t-field-options='{
@@ -1524,7 +1525,7 @@
 <template id="continue_shopping" inherit_id="website_purchase_collective.cart_red" customize_show="True" name="Return to order Button">
   <xpath expr="//a[@href='/purchase/checkout']" position="before">
     <t t-set="website_purchase_order" t-value="website.purchase_get_order()"/>
-    <a t-attf-href="/purchase/orders/#{website_purchase_order.cp_order_id.id}" class="btn btn-default mb32">
+    <a t-attf-href="/purchase/cart" class="btn btn-default mb32">
     <span class="fa fa-long-arrow-left"/> 
     <span class="hidden-xs">Return to order</span>
     <span class="visible-xs-inline">Continue</span></a>

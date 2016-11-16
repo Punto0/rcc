@@ -250,27 +250,26 @@ class TxFaircoin(osv.Model):
         status = data.get('payment_status')
 	reference = data.get('item_number')
 
-        #tx_ids = self.pool['payment.transaction'].search(cr, uid, [('reference', '=', reference)], context=context)
-        #if not tx_ids or len(tx_ids) > 1:
-        #    error_msg = 'Faircoin: received data for reference %s' % (reference)
-        #    if not tx_ids:
-        #        error_msg += '; no order found'
-        #    else:
-        #        error_msg += '; multiple order found'
-        #    _logger.error(error_msg)
-        #    raise ValidationError(error_msg)
+        tx_ids = self.pool['payment.transaction'].search(cr, uid, [('reference', '=', reference)], context=context)
+        if not tx_ids or len(tx_ids) > 1:
+            error_msg = 'Faircoin: received data for reference %s' % (reference)
+            if not tx_ids:
+                error_msg += '; no order found'
+            else:
+                error_msg += '; multiple order found'
+            _logger.error(error_msg)
+            raise ValidationError(error_msg)
 
-        #txr = self.pool.get('payment.transaction').browse(cr, uid, tx_ids[0], context=context)
+        txr = self.pool.get('payment.transaction').browse(cr, uid, tx_ids[0], context=context)
         order_id = self.pool.get('sale.order').search(cr, uid, [('name','in',reference)], context=context)
         order = self.pool.get('sale.order').browse(cr, uid, order_id, context=context)
-        txr = order.payment_tx_id
+        #txr = order.payment_tx_id
         if status in ['Completed', 'Processed']:
             _logger.info('tx set done for reference %s' %(reference))
-            data.update(item_number=order.name,state='done',date_validate=data.get('payment_date', fields.datetime.now()),payment_status='done', amount=order.amount_total)
-
+            data.update(acquirer_reference=order.name,state='done',date_validate=data.get('payment_date', fields.datetime.now()),amount=order.amount_total)
             #if txr.sale_order_id and txr.sale_order_id.state in ['draft', 'sent','pending']:
-            #self.pool['sale.order'].action_button_confirm(cr, SUPERUSER_ID, [txr.sale_order_id.id], context=context)
-            #self.pool['sale.order'].force_quotation_send(cr, SUPERUSER_ID, [txr.sale_order_id.id], context=context)
+            self.pool['sale.order'].action_button_confirm(cr, SUPERUSER_ID, [order.id], context=context)
+            #self.pool['sale.order'].force_quotation_send(cr, SUPERUSER_ID, [order.id], context=context)
             _logger.debug('writing data : %s' %data)
             return txr.write(data)
         elif status in ['Pending', 'Expired']:

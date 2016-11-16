@@ -387,7 +387,7 @@ class website_purchase(http.Controller):
         ['/purchase/orders/<int:order_id>'], type='http', auth="public",
         website=True)
     def supplier_orders_followup(self, order_id=None):
-        #request.website.purchase_reset()
+        request.website.purchase_reset()
         domain = [
         #    ('state', 'not in', ['draft', 'cancel']),
             ('id', '=', order_id)
@@ -712,15 +712,15 @@ class website_purchase(http.Controller):
         request.session['sale_order_id'] = order.id 
         
         #añadir la orden a purchase_collective.sales_order_lines 
-        cp_order_id = request.session.get('cp_order_id')
-        cp_obj = request.registry.get('purchase_collective.order') 
-        cp_order = cp_obj.browse(cr, SUPERUSER_ID, cp_order_id, context=context)
-        logging.debug("Actualizando ordenes - cp : %s -- sale : %s " %(cp_order_id, order.id))
-        res = order.update( { 'cp_order_id' : cp_order_id } )
-        logging.debug("sale order write res : %s" %res) 
+        #cp_order_id = request.session.get('cp_order_id')
+        #cp_obj = request.registry.get('purchase_collective.order') 
+        #cp_order = cp_obj.browse(cr, SUPERUSER_ID, cp_order_id, context=context)
+        #logging.debug("Actualizando ordenes - cp : %s -- sale : %s " %(cp_order_id, order.id))
+        #res = order.update( { 'cp_order_id' : cp_order_id } )
+        #logging.debug("sale order write res : %s" %res) 
         #res = cp_order.update( { 'sales_order_lines' : [(4, order.id)] } )
         #logging.debug("cp order write res : %s" %res)
-        logging.debug("Final /purchase/confirm_order")    
+        #logging.debug("Final /purchase/confirm_order")    
         return request.redirect("/purchase/payment")
 
     #------------------------------------------------------
@@ -783,8 +783,6 @@ class website_purchase(http.Controller):
                     },
                     context=render_ctx)
 
-        # Reset sessions id's -- A partir de aqui no se pueden modificar las lineas del pedido
-        #request.website.purchase_reset()        
         #logging.debug("End /purchase/payment") #debug
         return request.website.render("website_purchase_collective.payment", values)
 

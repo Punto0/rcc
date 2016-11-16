@@ -75,7 +75,7 @@ class purchase_collective_order(osv.Model):
         quantity = 0
         for so in self.browse(cr, uid, ids, context=context):
             if so.state != 'draft':
-                request.session['purchase_order_id'] = None
+                #request.session['purchase_order_id'] = None
                 #raise osv.except_osv(_('Error!'), _('It is forbidden to modify a purchase order which is not in draft status'))
                 request.website.purchase_reset() 
             if line_id != False:
@@ -85,7 +85,7 @@ class purchase_collective_order(osv.Model):
 
             # Create line if no line with product_id can be located
             if not line_id:
-                values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=1, context=context)
+                values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=0, context=context)
                 line_id = sol.create(cr, SUPERUSER_ID, values, context=context) ####
                 if add_qty:
                   add_qty -= 1
@@ -233,9 +233,19 @@ class website(orm.Model):
         return False
 
     def purchase_reset(self, cr, uid, ids, context=None):
+        #order = request.website.sale_get_order()
+        #if order:
+        #    for line in order.website_order_line:
+        #        line.unlink()
+        #order = request.website.purchase_get_order()
+        #if order:
+        #    for line in order.website_order_line:
+        #        line.unlink()
         request.session.update({
             'purchase_order_id': False,
             'purchase_transaction_id': False,
             'purchase_order_code_pricelist_id': False,
-            'cp_order_id': False,   
+            'cp_order_id': False,
+            'sale_order_id': False,   
         })
+        
