@@ -1,78 +1,79 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
+import time
 import random
-
+import logging
 from openerp import SUPERUSER_ID
 import openerp.addons.decimal_precision as dp
 from openerp.osv import osv, orm, fields
 from openerp.addons.web.http import request
 from openerp.tools.translate import _
+from openerp.tools import DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
 
-class purchase_collective_order(osv.Model):
+class sale_order(osv.Model):
     _inherit = "sale.order"
 
-    def _cart_qty(self, cr, uid, ids, field_name, arg, context=None):
-        res = dict()
-        for order in self.browse(cr, uid, ids, context=context):
-            res[order.id] = int(sum(l.product_uom_qty for l in (order.website_order_line or [])))
-        return res
-
-    _columns = {
-        'website_order_line': fields.one2many(
-            'sale.order.line', 'order_id',
-            string='Order Lines displayed on Website', readonly=True,
-            help='Order Lines to be displayed on the website. They should not be used for computation purpose.',
-        ),
-        'cart_quantity': fields.function(_cart_qty, type='integer', string='Cart Quantity'),
-        'payment_acquirer_id': fields.many2one('payment.acquirer', 'Payment Acquirer', on_delete='set null', copy=False),
-        'payment_tx_id': fields.many2one('payment.transaction', 'Transaction', on_delete='set null', copy=False),
-    }
-
-    def _get_errors(self, cr, uid, order, context=None):
-        return []
-
-    def _get_website_data(self, cr, uid, order, context):
-        return {
-            'partner': order.partner_id.id,
-            'order': order
-        }
-    
-    def _cart_find_product_line(self, cr, uid, ids, product_id=None, line_id=None, context=None, **kwargs):
-        for so in self.browse(cr, uid, ids, context=context):
-            domain = [('order_id', '=', so.id), ('product_id', '=', product_id)]
-            if line_id:
-                domain += [('id', '=', line_id)]
-            return self.pool.get('sale.order.line').search(cr, SUPERUSER_ID, domain, context=context)
-
-    def _website_product_id_change(self, cr, uid, ids, order_id, product_id, qty=0, line_id=None, context=None):
+    def _website_cp_product_id_change(self, cr, uid, ids, order_id, product_id, qty, line_id=None, context=None):
         so = self.pool.get('sale.order').browse(cr, uid, order_id, context=context)
+        logging.info("init website_cp_product_id_change -- Company : %s -- Sale Order : %s -- product_id : %s --" %(so.company_id.name, so.name, product_id))
+        if not context:
+            context = {}
+        context = dict(context, company_id=so.company_id.id)
+        logging.info("Context : %s" %context)
 
-        values = self.pool.get('sale.order.line').product_id_change(cr, SUPERUSER_ID, [],
-            pricelist=so.pricelist_id.id,
-            product=product_id,
-            partner_id=so.partner_id.id,
-            fiscal_position=so.fiscal_position.id,
+        product = self.pool.get('product.product').browse(cr, SUPERUSER_ID, product_id, context)
+
+        if not product.taxes_id: 
+              product.write( { 'taxes_id' : [(4, 7)] } )
+        logging.info("taxes %s" %product.taxes_id)
+
+        if not product:
+            return {'value': {'th_weight': 0,'product_uos_qty': qty}, 'domain': {'product_uom': [],'product_uos': []}}
+        #if not date_order:
+        #	    date_order = time.strftime(DEFAULT_SERVER_DATE_FORMAT)
+
+        result = {}
+        result['tax_id'] = 7
+        result['name'] = product.name
+        if product.description_sale:
+            result['name'] += '\n'+product.description_sale
+        result['th_weight'] = qty * product.weight
+        result['product_uos_qty'] = qty
+        # override listas de precios, si se quieren usar hay que quitar esto
+        result['price_unit'] = product.list_price
+        result['product_id'] = product.id
+        result['order_id'] = order_id
+        logging.info("return : %s" %result)
+        return result
+
+        domain = {'product_uom': [],'product_uos': []}
+
+        values = self.pool.get('sale.order.line').product_id_change(cr, SUPERUSER_ID, [], 
+            pricelist=so.pricelist_id.id, 
+            product=product.id, 
+            partner_id=so.partner_id.id, 
             qty=qty,
-            context=dict(context or {}, company_id=so.company_id.id)
-        )['value']
+            #fiscal_position=fp,
+            context=context)['value']
+
+        logging.info("Values : %s" %values) 
 
         if line_id:
             line = self.pool.get('sale.order.line').browse(cr, SUPERUSER_ID, line_id, context=context)
             values['name'] = line.name
         else:
-            product = self.pool.get('product.product').browse(cr, uid, product_id, context=context)
             values['name'] = product.description_sale and "%s\n%s" % (product.display_name, product.description_sale) or product.display_name
-
-        values['product_id'] = product_id
-        values['order_id'] = order_id
-        if values.get('tax_id') != None:
-            values['tax_id'] = [(6, 0, values['tax_id'])]
+            values['price'] = product.list_price
+            values['company_id'] = so.company_id
+            #if values.get('tax_id') != None:
+              #values['tax_id'] = [(6, 0, values['tax_id'])]
+        logging.info("Returning values : %s " %values)  
         return values
-
-    def _cart_update(self, cr, uid, ids, product_id=None, line_id=None, add_qty=0, set_qty=0, context=None, **kwargs):
-        """ Add or set product quantity, add_qty can be negative """
+    
+    def _cp_cart_update(self, cr, uid, ids, product_id=None, line_id=None, add_qty=0, set_qty=0, context=None, **kwargs):
+        # Add or set product quantity, add_qty can be negative
+        logging.info("init cp_cart_update ids: %s -- product_id : %s " %(ids,product_id))
         sol = self.pool.get('sale.order.line')
-
-        quantity = 0
         for so in self.browse(cr, uid, ids, context=context):
             if so.state != 'draft':
                 #request.session['purchase_order_id'] = None
@@ -85,8 +86,9 @@ class purchase_collective_order(osv.Model):
 
             # Create line if no line with product_id can be located
             if not line_id:
-                values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=0, context=context)
-                line_id = sol.create(cr, SUPERUSER_ID, values, context=context) ####
+                values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=1, context=context)
+                logging.info("Creating sale.order.line with values : %s" %values)
+                line_id = sol.create(cr, SUPERUSER_ID, values, context=context)
                 if add_qty:
                   add_qty -= 1
 
@@ -96,51 +98,30 @@ class purchase_collective_order(osv.Model):
             elif add_qty != None:
                 quantity = sol.browse(cr, SUPERUSER_ID, line_id, context=context).product_uom_qty + (add_qty or 0)
 
-            # Remove zero of negative lines
             if quantity >= 0:
-                #sol.unlink(cr, SUPERUSER_ID, [line_id], context=context)
-            #else:
-                # update line
                 values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=quantity, line_id=line_id, context=context)
                 values['product_uom_qty'] = quantity
                 sol.write(cr, SUPERUSER_ID, [line_id], values, context=context)
 
+        logging.info("Returning : %s -- %s" %(line_id, quantity))
         return {'line_id': line_id, 'quantity': quantity}
 
-    def _cart_accessories(self, cr, uid, ids, context=None):
-        for order in self.browse(cr, uid, ids, context=context):
-            s = set(j.id for l in (order.website_order_line or []) for j in (l.product_id.accessory_product_ids or []))
-            s -= set(l.product_id.id for l in order.order_line)
-            product_ids = random.sample(s, min(len(s),3))
-            return self.pool['product.product'].browse(cr, uid, product_ids, context=context)
-
-class sale_order_line(osv.Model):
-    _inherit = "sale.order.line"
-
-    def _fnct_get_discounted_price(self, cr, uid, ids, field_name, args, context=None):
-        res = dict.fromkeys(ids, False)
-        for line in self.browse(cr, uid, ids, context=context):
-            res[line.id] = (line.price_unit * (1.0 - (line.discount or 0.0) / 100.0))
-        return res
-
-    _columns = {
-        'discounted_price': fields.function(_fnct_get_discounted_price, string='Discounted price', type='float', digits_compute=dp.get_precision('Product Price')),
-    }
+        # Actualizamos el total de la orden colectiva y sunscribimos el usuario al muro
+        def action_button_confirm(self, cr, uid, ids, context=None):
+            if self.is_cp:
+                cp_order = self.pool.get('purchase_collective.order').browse(cr, SUPERUSER_ID, self.cp_order_id, context=context)
+                cp_order.onchange_order_line(cr, uid, self.co_order_id)
+                cp_order.subscribe(cr, uid, [])
+            return super(sale_order, self).action_button_confirm(cr, uid, ids, context=context)
 
 class website(orm.Model):
     _inherit = 'website'
-
-    _columns = {
-        'pricelist_id': fields.related('user_id','partner_id','property_product_pricelist',
-            type='many2one', relation='product.pricelist', string='Default Pricelist'),
-        'currency_id': fields.related('pricelist_id','currency_id',
-            type='many2one', relation='res.currency', string='Default Currency'),
-    }
 
     def purchase_product_domain(self, cr, uid, ids, context=None):
         return [("purchase_ok", "=", True)]
 
     def purchase_get_order(self, cr, uid, ids, force_create=False, code=None, update_pricelist=None, context=None):
+        logging.info("init purchase_get_order - ids %s" %ids)
         purchase_order_obj = self.pool['sale.order']
         purchase_order_id = request.session.get('purchase_order_id')
         purchase_order = None
@@ -163,6 +144,7 @@ class website(orm.Model):
                     'user_id': w.user_id.id,
                     'partner_id': partner.id,
                     'pricelist_id': partner.property_product_pricelist.id,
+                    'fiscal_position':2  
                     #'section_id': self.pool.get('ir.model.data').get_object_reference(cr, uid, 'website', 'salesteam_website_sales')[1],
                 }
                 purchase_order_id = purchase_order_obj.create(cr, SUPERUSER_ID, values, context=context)
@@ -218,7 +200,7 @@ class website(orm.Model):
         else:
             request.session['purchase_order_id'] = None
             return None
-
+        logging.info("end get_purchase_order - return : %s -- %s" %(purchase_order.id, purchase_order.name))
         return purchase_order
 
     def purchase_get_transaction(self, cr, uid, ids, context=None):
@@ -243,9 +225,9 @@ class website(orm.Model):
         #        line.unlink()
         request.session.update({
             'purchase_order_id': False,
-            'purchase_transaction_id': False,
-            'purchase_order_code_pricelist_id': False,
+            #'purchase_transaction_id': False,
+            #'purchase_order_code_pricelist_id': False,
             'cp_order_id': False,
-            'sale_order_id': False,   
+            #'sale_order_id': False,   
         })
         

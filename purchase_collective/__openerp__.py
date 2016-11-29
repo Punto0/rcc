@@ -25,7 +25,7 @@ El Usuario que crea la orden es el encargado de distribuir los productos al rest
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ["purchase","sale","product",],
+    'depends': ["purchase","sale"],
 
     # always loaded
     'data': [
@@ -34,7 +34,7 @@ El Usuario que crea la orden es el encargado de distribuir los productos al rest
         'data/purchase_collective_workflow.xml',
         'data/purchase_collective_sequence.xml',
         'views/purchase_collective.xml',
-        'views/product.xml',
+        #'views/product.xml', # Usamos el precio de lista y purchase_ok de momento, no modifica nada de producto
         'views/sale_order.xml',  
     ],
     # only loaded in demonstration mode

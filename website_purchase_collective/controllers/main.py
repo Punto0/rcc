@@ -8,7 +8,25 @@ from openerp.http import request
 from openerp.tools.translate import _
 from openerp.addons.website.models.website import slug
 from openerp.addons.web.controllers.main import login_redirect
+import openerp.addons.website_sale.controllers.main
 
+class website_sale(openerp.addons.website_sale.controllers.main.website_sale):
+
+    # Update the total amount in the parent cp and subscribe the user to the wall
+    @http.route(['/shop/confirmation'], type='http', auth="public", website=True)
+    def payment_confirmation(self, **post):
+        cr, uid, context = request.cr, request.uid, request.context
+        sale_order_id = request.session.get('sale_last_order_id')
+        if sale_order_id:
+            order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
+        else:
+            return request.redirect('/shop')
+        if order.is_cp: 
+            cp_order = request.registry['purchase_collective.order'].browse(cr, SUPERUSER_ID, order.cp_order_id.id, context=context)
+            cp_order.onchange_order_line()
+            cp_order.subscribe(order.partner_id)
+        res = super(website_sale, self).payment_confirmation(**post)
+        return res
 
 PPG = 20 # Products Per Page
 PPR = 4  # Products Per Row
@@ -388,12 +406,14 @@ class website_purchase(http.Controller):
         website=True)
     def supplier_orders_followup(self, order_id=None):
         request.website.purchase_reset()
+        request.website.sale_reset() 
         domain = [
         #    ('state', 'not in', ['draft', 'cancel']),
             ('id', '=', order_id)
         ]
         order = request.env['purchase_collective.order'].search(domain)
-        products = request.env['product.template'].search([
+        request.session['cp_order_id'] = order.id
+        products = request.env['product.product'].search([
             ('seller_id','=',order.partner_id.id), 
             ('purchase_ok','=',True)
         ])
@@ -403,9 +423,8 @@ class website_purchase(http.Controller):
             # la busqueda por seller_id falla, nos aseguramos que los productos son del supplier
             #logging.info("Product %s seller %s order supplier %s" %(p.name, p.seller_id.id, order.partner_id))
             #if p.seller_id.id == order.partner_id.id:
-              request.website.purchase_get_order(force_create=1)._cart_update(product_id=p.id)
+              request.website.purchase_get_order(force_create=1)._cp_cart_update(product_id=p.id)
         
-        request.session['cp_order_id'] = order.id
         return request.website.render(
             "website_purchase_collective.orders_followup",
             {
@@ -744,7 +763,7 @@ class website_purchase(http.Controller):
         sale_order_obj = request.registry.get('sale.order')
 
         order = request.website.purchase_get_order(context=context)
-
+        logging.info("order : %s" %order)
         redirection = self.checkout_redirection(order)
         if redirection:
             return redirection
@@ -759,7 +778,7 @@ class website_purchase(http.Controller):
         values = {
             'order': request.registry['sale.order'].browse(cr, SUPERUSER_ID, order.id, context=context)
         }
-        values['errors'] = sale_order_obj._get_errors(cr, uid, order, context=context)
+        values['errors'] = sale_order_obj._get_errors(cr, uid, order, context=context) # casca en website_sale_delivery
         #######################################
         values.update(sale_order_obj._get_website_data(cr, uid, order, context))
 
@@ -782,7 +801,7 @@ class website_purchase(http.Controller):
                         'return_url': '/shop/payment/validate',
                     },
                     context=render_ctx)
-
+            #ToDo: set the company's order to responsible of the order
         #logging.debug("End /purchase/payment") #debug
         return request.website.render("website_purchase_collective.payment", values)
 
@@ -801,7 +820,7 @@ class website_purchase(http.Controller):
         #    pricelist_id = partner.property_product_pricelist.id
         #prices = pool['product.pricelist'].price_rule_get_multi(cr, uid, [], [(product, add_qty, partner) for product in products], context=context)
         #return {product_id: prices[product_id][pricelist_id][0] for product_id in product_ids}
-        return {product.id: product.cp_price for product in products}
+        return {product.id: product.list_price for product in products}
 
 
 # vim:expandtab:tabstop=4:softtabstop=4:shiftwidth=4:

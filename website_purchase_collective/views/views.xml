@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
 <data>
+
     <record model="ir.ui.view" id="product_template_purchase_collective_website">
         <field name="name">product.template.purchase.collective.website.form</field>
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
-            <field name="list_price" position="after">
-                <group name="website" string="Collective Purchase Website">
+            <field name="description" position="after">
+                <group name="website" invisible="1" t-if="product.purchase_ok" string="Collective Purchase Website">
                     <field name="website_url" invisible="1"/>
                     <field name="website_published" class="pull-right" widget="website_button"/>
                 </group>
@@ -15,45 +16,6 @@
         </field>
     </record>
 
-<!--                    <field name="alternative_product_ids" widget="many2many_tags"/>
-                    <field name="accessory_product_ids" widget="many2many_tags"/>
-                    <field name="website_style_ids" widget="many2many_tags"/>
-                    <field name="website_sequence"/>
--->
-
-    <!-- Product attribute -->
-<!--
-    <record id="variants_template_tree_view" model="ir.ui.view">
-        <field name="name">variants.template.tree</field>
-        <field name="model">product.attribute.value</field>
-        <field name="inherit_id" ref="product.variants_template_tree_view"/>
-        <field name="arch" type="xml">
-            <field name="name" position="after">
-                <field name="color"/>
-            </field>
-        </field>
-    </record>
-    <record id="variants_tree_view" model="ir.ui.view">
-        <field name="name">variants.template.tree</field>
-        <field name="model">product.attribute.value</field>
-        <field name="inherit_id" ref="product.variants_tree_view"/>
-        <field name="arch" type="xml">
-            <field name="name" position="after">
-                <field name="color"/>
-            </field>
-        </field>
-    </record>
-    <record id="attribute_tree_view" model="ir.ui.view">
-        <field name="name">product.attribute.tree.type</field>
-        <field name="model">product.attribute</field>
-        <field name="inherit_id" ref="product.attribute_tree_view"></field>
-        <field name="arch" type="xml">
-            <field name="name" position="after">
-                <field name="type"/>
-            </field>
-        </field>
-    </record>
--->
     <template id="request_quotations" name="Request Quotations">
         <h1>Open Collective Purcharse</h1>
         <t t-if="not request_quotations">

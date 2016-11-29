@@ -27,9 +27,9 @@ class PurchaseCollectiveOrder(models.Model):
 
     deadline_date = fields.Date(string='Order Deadline', required=True, help="End date of the order. Place your orders before this date")
     
-    amount_untaxed = fields.Float('Amount untaxed',compute="onchange_order_line")
-    amount_tax = fields.Float('Taxes',compute="onchange_order_line")
-    amount_total = fields.Float('Amount Total',compute="onchange_order_line")
+    amount_untaxed = fields.Float('Amount untaxed',compute='onchange_order_line',store=True)
+    amount_tax = fields.Float('Taxes',compute='onchange_order_line',store=True)
+    amount_total = fields.Float('Amount Total',compute='onchange_order_line',store=True)
 
     street = fields.Char('Street')
     street2 = fields.Char('Street2')
@@ -44,14 +44,13 @@ class PurchaseCollectiveOrder(models.Model):
 
     qty_min =fields.Float('Cantidad mínima del pedido', required=True, help='Cantidad mínima del pedido requerida para ejecutar la orden de compra')
 
+    # Called in the update link in the cp form and in website payment confirmation
+    @api.one
     @api.onchange('sales_order_lines') 
-    def onchange_order_line(self, cr, uid, ids, args=None):
-        _logger.info("onchange_order_lines-- ids : %s -- args: %s" %(ids,args))
-
-        #cr, uid, context = self.env.cr, self.env.user, self.env.context
-        #res = {}
+    def onchange_order_line(self):
+        #_logger.info("onchange_order_lines-- ids : %s -- args: %s" %(ids,context))
+        cr, uid, context = self.env.cr, self.env.user, self.env.context
         #cur_obj=self.pool.get('res.currency')
-        #line_obj = self.pool['purchase.collective.order.line']
 
         res = {
                 'amount_untaxed': 0.0,
@@ -60,28 +59,30 @@ class PurchaseCollectiveOrder(models.Model):
         }
 
         val = val1 = 0.0
-
-        order = self.browse(cr, SUPERUSER_ID, ids)
-        #_logger.info("order %s " %order.id)
         val_tax = 0.0
         val_untax = 0.0  
-        if order:
-            cur = order.pricelist_id.currency_id
-            for line in order.sales_order_lines:
-                if line.state in ['done','approved']: 
+
+        #order = self.browse(cr, uid, ids, context=context)
+
+        if True:
+            #cur = order.pricelist_id.currency_id
+            #_logger.info("order : %s " %order.sales_order_lines)
+            for line in self.sales_order_lines:
+                _logger.info("line %s " %line.state)
+                if line.state in ['done','approved','confirm','progress']: 
                   val += line.amount_total
                   #val_tax += val.get('amount_tax',0.0)
                   #val_untax += val.get('amount_untaxed',0.0)
 
-            res['amount_tax'] = cur.round(val_tax)
+            res['amount_tax'] = val_tax
             res['amount_untaxed'] = val
             res['amount_total']= val
 
-            #_logger.info("Res : %s " %res)
+            _logger.info("Res : %s " %res)
 
-            order.write({'amount_untaxed': res['amount_untaxed']})
-            order.write({'amount_tax': res['amount_tax']})
-            order.write({'amount_total': res['amount_total']})
+            self.amount_untaxed = res['amount_untaxed']
+            self.amount_tax = res['amount_tax']
+            self.amount_total = res['amount_total'] 
         _logger.info("res : %s" %(res))
         return res
     

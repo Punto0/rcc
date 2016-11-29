@@ -154,7 +154,7 @@ $('.oe_website_purchase').each(function () {
 
     $(oe_website_purchase).on('change', 'input.js_product_change', function (ev) {
         var $parent = $(this).closest('.js_product');
-        $parent.find(".oe_default_price:first .oe_currency_value").html( price_to_str(+$(this).data('cp_price')) );
+        $parent.find(".oe_default_price:first .oe_currency_value").html( price_to_str(+$(this).data('list_price')) );
         $parent.find(".oe_price:first .oe_currency_value").html(price_to_str(+$(this).data('price')) );
         update_product_image(this, +$(this).val());
     });
