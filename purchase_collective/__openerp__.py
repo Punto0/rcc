@@ -34,7 +34,7 @@ El Usuario que crea la orden es el encargado de distribuir los productos al rest
         'data/purchase_collective_workflow.xml',
         'data/purchase_collective_sequence.xml',
         'views/purchase_collective.xml',
-        #'views/product.xml', # Usamos el precio de lista y purchase_ok de momento, no modifica nada de producto
+        #'views/product.xml', 
         'views/sale_order.xml',  
     ],
     # only loaded in demonstration mode
