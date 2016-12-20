@@ -18,3 +18,7 @@ class product_template(osv.Model):
         'sale_ok': fields.boolean(help="It can be sold individually through the normal shop", string="Allow Single Orders"),
         'purchase_ok': fields.boolean(help="It can sold in batchs through collective purchases", string="Allow Collective Orders"),
     }
+
+    _defaults = {
+        'purchase_ok': False,
+    } 
