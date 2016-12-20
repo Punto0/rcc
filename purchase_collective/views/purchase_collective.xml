@@ -99,7 +99,8 @@
                                 <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             </group>
                             <div class="oe_clear"/>
-                            <field name="notes" class="oe_inline" placeholder="Terms and conditions..."/>
+                            </hr>
+                            <field name="notes" placeholder="Place here your notes on the collective purchase order."/>
                         </page>
                         <page string="RFQ &amp; Bid">
                             <group>
