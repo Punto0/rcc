@@ -42,7 +42,7 @@ class PurchaseCollectiveOrder(models.Model):
     #fax = fields.Char('Fax')
     mobile = fields.Char('Mobile')
 
-    qty_min =fields.Float('Cantidad mínima del pedido', required=True, help='Cantidad mínima del pedido requerida para ejecutar la orden de compra')
+    qty_min =fields.Float('Minimun product quantity by single sale', required=True, help='Minimun quantity allowed by each single sale order in product quantity')
 
     # Called in the update link in the cp form and in website payment confirmation
     @api.one
