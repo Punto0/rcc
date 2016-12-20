@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import werkzeug
 import logging
+import pprint
 from urlparse import urlparse, parse_qs
 from openerp import SUPERUSER_ID
 from openerp import http
@@ -366,13 +367,25 @@ class website_purchase(http.Controller):
 
     @http.route(['/purchase/cart/update_json'], type='json', auth="public", methods=['POST'], website=True)
     def cart_update_json(self, product_id, line_id, add_qty=None, set_qty=None, display=True):
-        order = request.website.purchase_get_order()
-  
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
+        order =request.website.purchase_get_order()
+        logging.info("cart_update_json context : %s", pprint.pformat(context))
+        logging.info("cart_update_json cp_order_id : %s" %request.session['cp_order_id'])
+        logging.info("cart_update_json sale_order :  %s" %pprint.pformat(order))
+        logging.info("cart_update_json sale_order parent:  %s" %pprint.pformat(order.cp_order_id))
+        cp_order = pool.get('purchase_collective.order').browse(cr, uid, request.session['cp_order_id'])
+ 
         if order.state != 'draft':
             request.website.purchase_reset()
             return {}
+
+        logging.debug("cart_update_json order min : %s" %(order.cp_order_id.qty_min))
+        if set_qty < order.cp_order_id.qty_min:
+             qty = order.cp_order_id.qty_min
+        else:
+             qty = set_qty
         #la línea puede estar creada o no --> Lo vemos en _cart_update
-        value = order._cart_update(product_id=product_id, line_id=line_id, add_qty=add_qty, set_qty=set_qty)
+        value = order._cp_cart_update(product_id=product_id, line_id=line_id, add_qty=add_qty, set_qty=qty)
         #if not order.cart_quantity:
             #request.website.purchase_reset()
             #return {}
@@ -405,6 +418,7 @@ class website_purchase(http.Controller):
         ['/purchase/orders/<int:order_id>'], type='http', auth="public",
         website=True)
     def supplier_orders_followup(self, order_id=None):
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         request.website.purchase_reset()
         request.website.sale_reset() 
         domain = [
@@ -412,18 +426,20 @@ class website_purchase(http.Controller):
             ('id', '=', order_id)
         ]
         order = request.env['purchase_collective.order'].search(domain)
-        request.session['cp_order_id'] = order.id
+        request.session['cp_order_id'] = order_id
         products = request.env['product.product'].search([
             ('seller_id','=',order.partner_id.id), 
             ('purchase_ok','=',True)
         ])
         #logging.info("Products : %s " %products) # debug
 
+        sale_order = request.website.purchase_get_order(force_create=1,context=dict(context or {}, cp_order_id=order_id))
+        sale_order.write( { 'cp_order_id' : order_id, 'is_cp' : True } )
         for p in products:
             # la busqueda por seller_id falla, nos aseguramos que los productos son del supplier
             #logging.info("Product %s seller %s order supplier %s" %(p.name, p.seller_id.id, order.partner_id))
             #if p.seller_id.id == order.partner_id.id:
-              request.website.purchase_get_order(force_create=1)._cp_cart_update(product_id=p.id)
+              sale_order._cp_cart_update(product_id=p.id, set_qty=order.qty_min)
         
         return request.website.render(
             "website_purchase_collective.orders_followup",
@@ -439,7 +455,7 @@ class website_purchase(http.Controller):
     @http.route(['/purchase/checkout'], type='http', auth="public", website=True)
     def checkout(self, **post):
         cr, uid, context = request.cr, request.uid, request.context
-
+	
         order = request.website.purchase_get_order(context=context)
 
         redirection = self.checkout_redirection(order)

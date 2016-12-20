@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import time
 import random
 import logging
+import pprint
 from openerp import SUPERUSER_ID
 import openerp.addons.decimal_precision as dp
 from openerp.osv import osv, orm, fields
@@ -73,6 +74,8 @@ class sale_order(osv.Model):
     def _cp_cart_update(self, cr, uid, ids, product_id=None, line_id=None, add_qty=0, set_qty=0, context=None, **kwargs):
         # Add or set product quantity, add_qty can be negative
         logging.info("init cp_cart_update ids: %s -- product_id : %s " %(ids,product_id))
+        logging.info("context : %s " %(context))
+        logging.info("kwargs : %s " %kwargs)
         sol = self.pool.get('sale.order.line')
         for so in self.browse(cr, uid, ids, context=context):
             if so.state != 'draft':
@@ -84,6 +87,13 @@ class sale_order(osv.Model):
                 if line_ids:
                     line_id = line_ids[0]
 
+            order_min = so.cp_order_id.qty_min # request.website.purchase_get_order().cp_order_id
+
+            logging.info("context cp Order : %s " %context.get('cp_order_id'))
+            logging.info("sale Order : %s ", pprint.pformat(so))
+            logging.info("Order parent : %s ", pprint.pformat(so.cp_order_id.id))
+            logging.info("order_min : %s -- add_qty : %s -- set_qty : %s " %(order_min, add_qty, set_qty))
+            #order_min = order.qty_min
             # Create line if no line with product_id can be located
             if not line_id:
                 values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=1, context=context)
@@ -93,20 +103,24 @@ class sale_order(osv.Model):
                   add_qty -= 1
 
             # compute new quantity
+          
             if set_qty:
                 quantity = set_qty
+
             elif add_qty != None:
                 quantity = sol.browse(cr, SUPERUSER_ID, line_id, context=context).product_uom_qty + (add_qty or 0)
 
-            if quantity >= 0:
-                values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=quantity, line_id=line_id, context=context)
-                values['product_uom_qty'] = quantity
-                sol.write(cr, SUPERUSER_ID, [line_id], values, context=context)
+            if quantity < order_min:
+                quantity = order_min 
 
-        logging.info("Returning : %s -- %s" %(line_id, quantity))
+            values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=quantity, line_id=line_id, context=context)
+            values['product_uom_qty'] = quantity
+            sol.write(cr, SUPERUSER_ID, [line_id], values, context=context)
+
+        logging.info("cart update returning : %s -- %s" %(line_id, quantity))
         return {'line_id': line_id, 'quantity': quantity}
 
-        # Actualizamos el total de la orden colectiva y sunscribimos el usuario al muro
+        # Actualizamos el total de la orden colectiva y subscribimos el usuario al muro
         def action_button_confirm(self, cr, uid, ids, context=None):
             if self.is_cp:
                 cp_order = self.pool.get('purchase_collective.order').browse(cr, SUPERUSER_ID, self.cp_order_id, context=context)
@@ -151,6 +165,7 @@ class website(orm.Model):
                 values = purchase_order_obj.onchange_partner_id(cr, SUPERUSER_ID, [], partner.id, context=context)['value']
                 purchase_order_obj.write(cr, SUPERUSER_ID, [purchase_order_id], values, context=context)
                 request.session['purchase_order_id'] = purchase_order_id
+                request.session['cp_order_id'] = context.get('cp_order_id')
                 purchase_order = purchase_order_obj.browse(cr, SUPERUSER_ID, purchase_order_id, context=context)
 
         if purchase_order_id:
