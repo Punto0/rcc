@@ -30,7 +30,7 @@
                         <h1>
                             <label string="Collective Purchase Order -- Open " attrs="{'invisible': [('state','not in',('draft','sent','bid'))]}"/>
                             <label string="Collective Purchase Order -- Closed" attrs="{'invisible': [('state','in',('draft','sent','bid'))]}"/>
-                            <field name="name" class="oe_inline" readonly="1"/>
+                            <field name="name" class="oe_inline"/>
                         </h1>
                     </div>
                     <group>
