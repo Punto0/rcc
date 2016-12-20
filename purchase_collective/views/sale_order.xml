@@ -7,10 +7,8 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
               <field name="partner_id" position="before" >
-                <group>  
-                    <field name="is_cp" string="Is Collective Purchase" help="Is part o a collective Purchase" groups="purchase_collective.group_purchase_collective_manager"/>
-                    <field name="cp_order_id" string="Collective Purchase wich this order belogns" groups="purchase_collective.group_purchase_collective_manager"/>
-                </group>  
+                    <field name="is_cp" string="Is Collective Purchase" help="Is part of a collective purchase." groups="purchase_collective.group_purchase_collective_manager"/>
+                    <field name="cp_order_id" string="Parent Collective Purchase" help="The collective purchase wich belongs" groups="purchase_collective.group_purchase_collective_manager"/>
               </field>
             </field>
         </record>
