@@ -337,6 +337,7 @@
                     <p t-if="len(product.product_variant_ids) > 1" class="css_not_available_msg bg-danger" style="padding: 15px;">Product not available</p>
 
                     <a id="add_to_cart" class="btn btn-primary btn-lg mt8 js_check_product a-submit" href="#">Add to Cart</a>
+
                   </div>
 
                 </form>
@@ -345,8 +346,7 @@
                 <div><p t-field="product.description_sale" class="text-muted"/></div>
                 <hr/>
                 <p class="text-muted">
-                    Comdiciones de venta<br/>
-                    Hardcoded in website_purchase_collective/views/templates.xml:400<br/>
+                    Sold in collective purchases
                 </p>
             </div>
           </div>
@@ -968,7 +968,7 @@
                       <th>Responsible</th>
                       <th>Deadline Date</th>
                       <th>Delivery City</th>
-                      <th>Minimun quantity</th>
+                      <th>Minimun quantity by single sale order</th>
                       <th>Funded at the moment</th>
                       <th>Notes</th>
                     </tr>
@@ -1059,13 +1059,9 @@
                     <div class="col-md-2 text-right"><span t-field="order.create_date" t-field-options='{"widget": "date"}'/></div>
                     <div class="col-md-10 text-right">Order Deadline Date:</div>
                     <div class="col-md-2 text-right"><span t-field="order.deadline_date" t-field-options='{"widget": "date"}'/></div>
-                    <div class="col-md-10 text-right">Funded at the moment:</div>
+                    <div class="col-md-10 text-right">Minimun quantity by single sale order:</div>
                     <div class="col-md-2 text-right">
-                      <strong><span t-field="order.amount_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
-                    </div>
-                    <div class="col-md-10 text-right">Minimun quantity to execute the order:</div>
-                    <div class="col-md-2 text-right">
-                      <strong><span t-field="order.qty_min" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
+                      <strong><span t-field="order.qty_min"/></strong>
                     </div>
                   </div>  
                 </div>
@@ -1087,6 +1083,10 @@
                   </div>
                 </div>
                 <hr/>
+                <div class="col-md-10 text-right">Funded at the moment:</div>
+                <div class="col-md-2 text-right">
+                   <strong><span t-field="order.amount_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
+                </div>
                 <div t-if="order.notes">
                   <strong>Notes on this order :</strong>   
                   <div class='row'><span t-field="order.notes"/></div>

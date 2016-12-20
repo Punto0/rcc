@@ -41,7 +41,7 @@
                             <field domain="[('type','=','purchase')]" name="pricelist_id" groups="product.group_purchase_pricelist" on_change="onchange_pricelist(pricelist_id, context)"/>
                             <field name="currency_id" groups="base.group_multi_currency"/>
                             <field name="journal_id" invisible='1'/>
-                            <label for="street" string="Central de Distribución"/>
+                            <label for="street" string="Distribution Point"/>
                             <div>
                                 <field name="street" placeholder="Street..."/>
                                 <field name="street2"/>
@@ -147,8 +147,8 @@
                     <field name="name" string="Reference"/>
                     <field name="deadline_date" />
                     <field name="partner_id"/>
-                    <field name="city" string="Ciudad de destino"/>
-                    <field name="state_id" string="Region de destino"/>
+                    <field name="city" string="Destination City"/>
+                    <field name="state_id" string="Destination State"/>
                     <field name="company_id" groups="base.group_multi_company" widget="selection"/>
                     <field name="minimum_planned_date" invisible='1'/>
                     <field name="origin" invisible='1'/>
