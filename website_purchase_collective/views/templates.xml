@@ -1083,10 +1083,13 @@
                   </div>
                 </div>
                 <hr/>
-                <div class="col-md-10 text-right">Funded at the moment:</div>
-                <div class="col-md-2 text-right">
-                   <strong><span t-field="order.amount_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
+                <div class='row'>
+                  <center>
+                  <div class="inline">Funded at the moment: <strong><span t-field="order.amount_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
+                  </div>
+                  </center>
                 </div>
+                <hr/>
                 <div t-if="order.notes">
                   <div class='row'><span t-field="order.notes" t-field-options='{"widget": "html"}'/></div>
                 </div>  
