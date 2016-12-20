@@ -294,8 +294,12 @@ class website_purchase(http.Controller):
 
         if not context.get('pricelist'):
             context['pricelist'] = int(self.get_pricelist())
-            product = template_obj.browse(cr, uid, int(product), context=context)
-
+            
+        product = template_obj.browse(cr, uid, int(product), context=context)
+        # Search if there is open collective purchases for this product
+        if product.purchase_ok:
+            quotations = pool.get('purchase_collective.order').search(cr, uid, [
+              ('state', 'in', ['draft']),('partner_id','=',product.company_id.partner_id.id)])
         values = {
             'search': search,
             'category': category,
@@ -307,7 +311,8 @@ class website_purchase(http.Controller):
             'category_list': category_list,
             'main_object': product,
             'product': product,
-            'get_attribute_value_ids': self.get_attribute_value_ids
+            'get_attribute_value_ids': self.get_attribute_value_ids,
+            'cp_orders' : quotations
         }
         return request.website.render("website_purchase_collective.product", values)
 
@@ -434,7 +439,7 @@ class website_purchase(http.Controller):
         #logging.info("Products : %s " %products) # debug
 
         sale_order = request.website.purchase_get_order(force_create=1,context=dict(context or {}, cp_order_id=order_id))
-        sale_order.write( { 'cp_order_id' : order_id, 'is_cp' : True } )
+        #sale_order.write( { 'cp_order_id' : order_id, 'is_cp' : True } )
         for p in products:
             # la busqueda por seller_id falla, nos aseguramos que los productos son del supplier
             #logging.info("Product %s seller %s order supplier %s" %(p.name, p.seller_id.id, order.partner_id))
