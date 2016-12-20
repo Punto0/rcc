@@ -1088,8 +1088,7 @@
                    <strong><span t-field="order.amount_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
                 </div>
                 <div t-if="order.notes">
-                  <strong>Notes on this order :</strong>   
-                  <div class='row'><span t-field="order.notes"/></div>
+                  <div class='row'><span t-field="order.notes" t-field-options='{"widget": "html"}'/></div>
                 </div>  
                 <hr/>
                 <div class="row">
