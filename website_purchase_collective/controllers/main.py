@@ -10,22 +10,22 @@ from openerp.tools.translate import _
 from openerp.addons.website.models.website import slug
 from openerp.addons.web.controllers.main import login_redirect
 import openerp.addons.website_sale.controllers.main
-
+"""
 class website_sale(openerp.addons.website_sale.controllers.main.website_sale):
-
+    # ToDo : 
     # Update the total amount in the parent cp and subscribe the user to the wall
-    @http.route(['/shop/confirmation'], type='http', auth="public", website=True)
-    def payment_confirmation(self, **post):
-        cr, uid, context = request.cr, request.uid, request.context
-        sale_order_id = request.session.get('sale_last_order_id')
-        if sale_order_id:
-            order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
-        else:
-            return request.redirect('/shop')
-        #order.action_button_confirm()
+    #@http.route(['/shop/confirmation'], type='http', auth="public", website=True)
+    #def payment_confirmation(self, **post):
+        #cr, uid, context = request.cr, request.uid, request.context
+        #sale_order_id = request.session.get('sale_last_order_id')
+        #if sale_order_id:
+        #    order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
+        #else:
+        #    return request.redirect('/shop')
+        #order.action_button_confirm() 
         res = super(website_sale, self).payment_confirmation(**post)
         return res
-
+"""
 PPG = 20 # Products Per Page
 PPR = 4  # Products Per Row
 
@@ -441,12 +441,14 @@ class website_purchase(http.Controller):
         for p in products:
             logging.info("Product %s seller %s order supplier %s" %(p.name, p.seller_id.id, order.partner_id))
             sale_order._cp_cart_update(product_id=p.id, set_qty=order.qty_min)
-        
+
+        #progressbar = ( order.amount_all / 1000 ) or 0.5        
         return request.website.render(
             "website_purchase_collective.orders_followup",
 	            {
                 'order': order,
                 'products': products,
+                'progressbar': '54.3',
             })
 
     #------------------------------------------------------

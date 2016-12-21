@@ -74,7 +74,7 @@
                     <notebook>
                         <page string="Orders">
                             <field name="sales_order_lines">
-                                <tree string="Collective Purchase Order Lines" editable="bottom">
+                                <tree string="Collective Purchase Order Lines">
                                     <field name="name"/>
                                     <field name="partner_id" string="Customer"/> 
                                     <field name="state" invisible='0'/>
@@ -99,7 +99,6 @@
                                 <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             </group>
                             <div class="oe_clear"/>
-                            </hr>
                             <field name="notes" placeholder="Place here your notes on the collective purchase order."/>
                         </page>
                         <page string="RFQ &amp; Bid">

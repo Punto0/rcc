@@ -37,7 +37,7 @@
   </div>
   <div class="oe_product_image">
       <a itemprop="url" t-att-href="keep('/purchase/product/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))">
-          <img itemprop="image" class="img img-responsive" t-att-src="website.image_url(product, 'image', None if product_image_big else '300x300')" t-att-alt="product.name"/>
+          <img itemprop="image" class="img img-responsive" t-att-src="website.image_url(product, 'image', '300x300')" t-att-alt="product.name"/>
       </a>
   </div>
   <section>
@@ -1085,6 +1085,7 @@
                 <hr/>
                 <div class='row'>
                   <center>
+<!--                  <div><span t-field="progressbar" t-field-options='{"widget": "progressbar"}'/></div> -->
                   <div class="inline">Funded at the moment: <strong><span t-field="order.amount_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
                   </div>
                   </center>
@@ -1122,7 +1123,7 @@
 <template id="cart_red" name="Shopping Cart">
   <div id="wrap">
     <div class="container oe_website_purchase">
-      <h2 class="mb32">Place your order</h2>
+      <h2 class="mb32"><center>Place your order</center></h2>
       <div class="row">
         <div class="col-md-8 col-sm-9 oe_cart">
           <t t-set="website_purchase_order" t-value="website.purchase_get_order()"/>
@@ -1141,8 +1142,8 @@
                 <tr>
                   <td t-if="not line.product_id.product_tmpl_id"></td>
                   <td align="center" t-if="line.product_id.product_tmpl_id">
-                    <span t-field="line.product_id.image_small"
-                          t-field-options='{"widget": "image", "class": "img-rounded"}'/>
+                  <span><img t-att-src="'data:image/png;base64,%s' % line.product_id.image" style="height: 200px;width:150px;"/></span>
+<!--                     <span t-field="line.product_id.image" t-field-options='{"widget": "image", "class": "img-rounded"}'/> -->
                   </td>
                   <td t-if="line.product_id.product_tmpl_id">
                     <div>
