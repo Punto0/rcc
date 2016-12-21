@@ -16,17 +16,17 @@ class sale_order(osv.Model):
 
     def _website_cp_product_id_change(self, cr, uid, ids, order_id, product_id, qty, line_id=None, context=None):
         so = self.pool.get('sale.order').browse(cr, uid, order_id, context=context)
-        logging.info("init website_cp_product_id_change -- Company : %s -- Sale Order : %s -- product_id : %s --" %(so.company_id.name, so.name, product_id))
+        #logging.info("init website_cp_product_id_change -- Company : %s -- Sale Order : %s -- product_id : %s --" %(so.company_id.name, so.name, product_id))
         if not context:
             context = {}
         context = dict(context, company_id=so.company_id.id)
-        logging.info("Context : %s" %context)
+        #logging.info("Context : %s" %context)
 
         product = self.pool.get('product.product').browse(cr, SUPERUSER_ID, product_id, context)
 
         if not product.taxes_id: 
               product.write( { 'taxes_id' : [(4, 7)] } )
-        logging.info("taxes %s" %product.taxes_id)
+        #logging.info("taxes %s" %product.taxes_id)
 
         if not product:
             return {'value': {'th_weight': 0,'product_uos_qty': qty}, 'domain': {'product_uom': [],'product_uos': []}}
@@ -57,7 +57,7 @@ class sale_order(osv.Model):
             #fiscal_position=fp,
             context=context)['value']
 
-        logging.info("Values : %s" %values) 
+        #logging.info("Values : %s" %values) 
 
         if line_id:
             line = self.pool.get('sale.order.line').browse(cr, SUPERUSER_ID, line_id, context=context)
@@ -68,14 +68,14 @@ class sale_order(osv.Model):
             values['company_id'] = so.company_id
             #if values.get('tax_id') != None:
               #values['tax_id'] = [(6, 0, values['tax_id'])]
-        logging.info("Returning values : %s " %values)  
+        #logging.info("Returning values : %s " %values)  
         return values
     
     def _cp_cart_update(self, cr, uid, ids, product_id=None, line_id=None, add_qty=0, set_qty=0, context=None, **kwargs):
         # Add or set product quantity, add_qty can be negative
-        logging.info("init cp_cart_update ids: %s -- product_id : %s " %(ids,product_id))
-        logging.info("context : %s " %(context))
-        logging.info("kwargs : %s " %kwargs)
+        #logging.info("init cp_cart_update ids: %s -- product_id : %s " %(ids,product_id))
+        #logging.info("context : %s " %(context))
+        #logging.info("kwargs : %s " %kwargs)
         sol = self.pool.get('sale.order.line')
         for so in self.browse(cr, uid, ids, context=context):
             if so.state != 'draft':
@@ -87,17 +87,17 @@ class sale_order(osv.Model):
                 if line_ids:
                     line_id = line_ids[0]
 
-            order_min = so.cp_order_id.qty_min # request.website.purchase_get_order().cp_order_id
+            order_min = so.cp_order_id.qty_min 
 
-            logging.info("context cp Order : %s " %context.get('cp_order_id'))
-            logging.info("sale Order : %s ", pprint.pformat(so))
-            logging.info("Order parent : %s ", pprint.pformat(so.cp_order_id.id))
-            logging.info("order_min : %s -- add_qty : %s -- set_qty : %s " %(order_min, add_qty, set_qty))
+            #logging.info("context cp Order : %s " %context.get('cp_order_id'))
+            #logging.info("sale Order : %s ", pprint.pformat(so))
+            #logging.info("Order parent : %s ", pprint.pformat(so.cp_order_id.id))
+            #logging.info("order_min : %s -- add_qty : %s -- set_qty : %s " %(order_min, add_qty, set_qty))
             #order_min = order.qty_min
             # Create line if no line with product_id can be located
             if not line_id:
                 values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=1, context=context)
-                logging.info("Creating sale.order.line with values : %s" %values)
+                #logging.info("Creating sale.order.line with values : %s" %values)
                 line_id = sol.create(cr, SUPERUSER_ID, values, context=context)
                 if add_qty:
                   add_qty -= 1
@@ -117,7 +117,7 @@ class sale_order(osv.Model):
             values['product_uom_qty'] = quantity
             sol.write(cr, SUPERUSER_ID, [line_id], values, context=context)
 
-        logging.info("cart update returning : %s -- %s" %(line_id, quantity))
+        #logging.info("cart update returning : %s -- %s" %(line_id, quantity))
         return {'line_id': line_id, 'quantity': quantity}
 
         # Actualizamos el total de la orden colectiva y subscribimos el usuario al muro
@@ -134,8 +134,8 @@ class website(orm.Model):
     def purchase_product_domain(self, cr, uid, ids, context=None):
         return [("purchase_ok", "=", True)]
 
-    def purchase_get_order(self, cr, uid, ids, force_create=False, code=None, update_pricelist=None, context=None):
-        logging.info("init purchase_get_order - ids %s" %ids)
+    def purchase_get_order(self, cr, uid, ids, force_create=False, code=None, update_pricelist=None, cp_order_id=None, context=None):
+        #logging.info("init purchase_get_order - ids %s" %ids)
         purchase_order_obj = self.pool['sale.order']
         purchase_order_id = request.session.get('purchase_order_id')
         purchase_order = None
@@ -145,16 +145,20 @@ class website(orm.Model):
             purchase_order = purchase_order_obj.browse(cr, SUPERUSER_ID, purchase_order_id, context=context)
         else:
             purchase_order_id = None
-
+        if cp_order_id:
+            parent = cp_order_id
+        else:
+            parent = context.get('cp_order_id')
         # create so if needed
         if not purchase_order_id and (force_create or code):
+            logging.info("Creating sale order with cp parent : %s -- %s" %(cp_order_id,parent))
             # TODO cache partner_id session
             partner = self.pool['res.users'].browse(cr, SUPERUSER_ID, uid, context=context).partner_id
 
             for w in self.browse(cr, uid, ids):
                 values = {
                     'is_cp' : True,
-                    'cp_order_id' : context.get('cp_order_id'), 
+                    'cp_order_id' : parent,
                     'user_id': w.user_id.id,
                     'partner_id': partner.id,
                     'pricelist_id': partner.property_product_pricelist.id,
@@ -165,7 +169,7 @@ class website(orm.Model):
                 values = purchase_order_obj.onchange_partner_id(cr, SUPERUSER_ID, [], partner.id, context=context)['value']
                 purchase_order_obj.write(cr, SUPERUSER_ID, [purchase_order_id], values, context=context)
                 request.session['purchase_order_id'] = purchase_order_id
-                request.session['cp_order_id'] = context.get('cp_order_id')
+                request.session['cp_order_id'] = parent
                 purchase_order = purchase_order_obj.browse(cr, SUPERUSER_ID, purchase_order_id, context=context)
 
         if purchase_order_id:
@@ -215,7 +219,7 @@ class website(orm.Model):
         else:
             request.session['purchase_order_id'] = None
             return None
-        logging.info("end get_purchase_order - return : %s -- %s" %(purchase_order.id, purchase_order.name))
+        #logging.info("end get_purchase_order - return : %s -- %s" %(purchase_order.id, purchase_order.name))
         return purchase_order
 
     def purchase_get_transaction(self, cr, uid, ids, context=None):

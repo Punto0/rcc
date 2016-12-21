@@ -90,7 +90,7 @@ class PurchaseCollectiveOrder(models.Model):
     @api.multi 
     def subscribe(self, partner):
         self.message_subscribe(partner_ids=[(partner.id)])
-        self.message_post(body=("Order line created by %s" %(partner.name)))
+        #self.message_post(body=("Order line created by %s" %(partner.name)))
   
     @api.multi
     def button_details(self):

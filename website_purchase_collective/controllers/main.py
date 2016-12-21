@@ -22,10 +22,7 @@ class website_sale(openerp.addons.website_sale.controllers.main.website_sale):
             order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
         else:
             return request.redirect('/shop')
-        if order.is_cp: 
-            cp_order = request.registry['purchase_collective.order'].browse(cr, SUPERUSER_ID, order.cp_order_id.id, context=context)
-            cp_order.onchange_order_line()
-            cp_order.subscribe(order.partner_id)
+        order.action_button_confirm()
         res = super(website_sale, self).payment_confirmation(**post)
         return res
 
@@ -438,8 +435,8 @@ class website_purchase(http.Controller):
         ])
         #logging.info("Products : %s " %products) # debug
 
-        sale_order = request.website.purchase_get_order(force_create=1,context=dict(context or {}, cp_order_id=order_id))
-        #sale_order.write( { 'cp_order_id' : order_id, 'is_cp' : True } )
+        sale_order = request.website.purchase_get_order(force_create=1, cp_order_id=order_id, context=context)
+        sale_order.write( { 'cp_order_id' : order_id, 'is_cp' : True } )
         for p in products:
             # la busqueda por seller_id falla, nos aseguramos que los productos son del supplier
             #logging.info("Product %s seller %s order supplier %s" %(p.name, p.seller_id.id, order.partner_id))
