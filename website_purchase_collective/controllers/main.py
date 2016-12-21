@@ -22,7 +22,7 @@ class website_sale(openerp.addons.website_sale.controllers.main.website_sale):
             order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
         else:
             return request.redirect('/shop')
-        order.action_button_confirm()
+        #order.action_button_confirm()
         res = super(website_sale, self).payment_confirmation(**post)
         return res
 
@@ -762,7 +762,6 @@ class website_purchase(http.Controller):
     #------------------------------------------------------
     # Payment
     #------------------------------------------------------
-
     @http.route(['/purchase/payment'], type='http', auth="public", website=True)
     def payment(self, **post):
         """ Payment step. This page proposes several payment means based on available
@@ -774,13 +773,13 @@ class website_purchase(http.Controller):
            did go to a payment.acquirer website but closed the tab without
            paying / canceling
         """
-        logging.debug("Start /purchase/payment") #debug
+        #logging.debug("Start /purchase/payment") #debug
         cr, uid, context = request.cr, request.uid, request.context
         payment_obj = request.registry.get('payment.acquirer')
         sale_order_obj = request.registry.get('sale.order')
 
         order = request.website.purchase_get_order(context=context)
-        logging.info("order : %s" %order)
+        #logging.info("order : %s" %order)
         redirection = self.checkout_redirection(order)
         if redirection:
             return redirection
@@ -796,13 +795,7 @@ class website_purchase(http.Controller):
             'order': request.registry['sale.order'].browse(cr, SUPERUSER_ID, order.id, context=context)
         }
         values['errors'] = sale_order_obj._get_errors(cr, uid, order, context=context) # casca en website_sale_delivery
-        #######################################
         values.update(sale_order_obj._get_website_data(cr, uid, order, context))
-
-        # fetch all registered payment means
-        # if tx:
-        #     acquirer_ids = [tx.acquirer_id.id]
-        # else:
         if not values['errors']:
             # Comentado para el FairMarket. 
             #acquirer_ids = payment_obj.search(cr, SUPERUSER_ID, [('website_published', '=', True,('company_id','=', order.company_id.id)], context=context)
@@ -820,10 +813,13 @@ class website_purchase(http.Controller):
                         'return_url': '/shop/payment/validate',
                     },
                     context=render_ctx)
-        #ToDo: set the company's order to responsible of the order
-        #logging.debug("End /purchase/payment") #debug
-        return request.website.render("website_purchase_collective.payment", values)
+            for line in order.order_line:
+                # puede que haya el metodo de envio generico de fm  
+                if line.product_id.company_id.id is not 1:
+                    order.company_id = line.product_id.company_id
+                    order.user_id = order.company_id.user_ids[0] # Cambia el salesman de la orden para que tenga acceso. User: All leads
 
+        return request.website.render("website_purchase_collective.payment", values)
  
     #-----------------------------------------------
     # Llamado por javascript y funciones varias
