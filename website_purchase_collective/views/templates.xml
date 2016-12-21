@@ -984,7 +984,7 @@
                         <td><t t-esc="request_quotation.city" /></td> 
                         <td><t t-esc="request_quotation.qty_min" /></td>
                         <td><span t-esc="request_quotation.amount_total" t-esc-options='{"widget": "monetary", "display_currency": "request_quotation.pricelist_id.currency_id"}'/></td>
-                        <td><t t-esc="request_quotation.notes" /></td> 
+                        <td><p t-field="request_quotation.notes" t-field-options='{"widget": "html"}'/></td> 
 
 <!--                        <td>
                             <a t-attf-href="/report/pdf/purchase.report_purchasequotation/#{request_quotation.id}"
