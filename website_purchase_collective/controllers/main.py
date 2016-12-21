@@ -804,7 +804,9 @@ class website_purchase(http.Controller):
         #     acquirer_ids = [tx.acquirer_id.id]
         # else:
         if not values['errors']:
-            acquirer_ids = payment_obj.search(cr, SUPERUSER_ID, [('website_published', '=', True), ('company_id', '=', order.company_id.id)], context=context)
+            # Comentado para el FairMarket. 
+            #acquirer_ids = payment_obj.search(cr, SUPERUSER_ID, [('website_published', '=', True,('company_id','=', order.company_id.id)], context=context)
+            acquirer_ids = payment_obj.search(cr, SUPERUSER_ID, [], context=context)
             values['acquirers'] = list(payment_obj.browse(cr, uid, acquirer_ids, context=context))
             render_ctx = dict(context, submit_class='btn btn-primary', submit_txt=_('Pay Now'))
             for acquirer in values['acquirers']:
@@ -818,7 +820,7 @@ class website_purchase(http.Controller):
                         'return_url': '/shop/payment/validate',
                     },
                     context=render_ctx)
-            #ToDo: set the company's order to responsible of the order
+        #ToDo: set the company's order to responsible of the order
         #logging.debug("End /purchase/payment") #debug
         return request.website.render("website_purchase_collective.payment", values)
 
