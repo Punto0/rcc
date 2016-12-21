@@ -1090,7 +1090,7 @@
                   </center>
                 </div>
                 <hr/>
-                <div t-if="order.notes">
+                <div t-if="order.notes" class="col-md-12">
                   <div class='row'><span t-field="order.notes" t-field-options='{"widget": "html"}'/></div>
                 </div>  
                 <hr/>
