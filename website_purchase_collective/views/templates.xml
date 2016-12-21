@@ -845,8 +845,8 @@
                           <td colspan="2" t-if="not line.product_id.product_tmpl_id"></td>
                           <td t-if="line.product_id.product_tmpl_id">
                               <a t-attf-href="/purchase/product/#{ slug(line.product_id.product_tmpl_id) }">
-                                  <span t-field="line.product_id.image_small"
-                                        t-field-options='{"widget": "image", "class": "img-rounded"}'/>
+                              <img t-att-src="'data:image/png;base64,%s' % line.product_id.image" style="max-height: 200px;max-width:200px;"/>
+<!--                                  <span t-field="line.product_id.image" t-field-options='{"widget": "image", "class": "img-rounded"}'/> -->
                               </a>
                           </td>
                           <td t-if="line.product_id.product_tmpl_id">
