@@ -429,23 +429,22 @@ class website_purchase(http.Controller):
         ]
         order = request.env['purchase_collective.order'].search(domain)
         request.session['cp_order_id'] = order_id
-        products = request.env['product.product'].search([
+        products = request.env['product.product'].sudo().search([
             ('seller_id','=',order.partner_id.id), 
             ('purchase_ok','=',True)
         ])
-        #logging.info("Products : %s " %products) # debug
+        logging.info("Products : %s " %products) # debug
 
         sale_order = request.website.purchase_get_order(force_create=1, cp_order_id=order_id, context=context)
         sale_order.write( { 'cp_order_id' : order_id, 'is_cp' : True } )
+
         for p in products:
-            # la busqueda por seller_id falla, nos aseguramos que los productos son del supplier
-            #logging.info("Product %s seller %s order supplier %s" %(p.name, p.seller_id.id, order.partner_id))
-            #if p.seller_id.id == order.partner_id.id:
-              sale_order._cp_cart_update(product_id=p.id, set_qty=order.qty_min)
+            logging.info("Product %s seller %s order supplier %s" %(p.name, p.seller_id.id, order.partner_id))
+            sale_order._cp_cart_update(product_id=p.id, set_qty=order.qty_min)
         
         return request.website.render(
             "website_purchase_collective.orders_followup",
-            {
+	            {
                 'order': order,
                 'products': products,
             })

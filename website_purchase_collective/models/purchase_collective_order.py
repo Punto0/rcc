@@ -97,7 +97,7 @@ class sale_order(osv.Model):
             # Create line if no line with product_id can be located
             if not line_id:
                 values = self._website_product_id_change(cr, uid, ids, so.id, product_id, qty=1, context=context)
-                #logging.info("Creating sale.order.line with values : %s" %values)
+                logging.info("Creating sale.order.line with values : %s" %values)
                 line_id = sol.create(cr, SUPERUSER_ID, values, context=context)
                 if add_qty:
                   add_qty -= 1
