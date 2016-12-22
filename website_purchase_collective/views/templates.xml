@@ -339,16 +339,21 @@
                   </div>
                 </form>
 -->
-                <div t-foreach="cp_orders" t-as="order">
-                    <a id="add_to_cart" t-att-href="'/purchase/orders/'+str(order)" class="btn btn-primary btn-lg mt8">Place Your Order</a>
-                </div>               
-
-                <hr t-if="product.description_sale"/>
-                <div><p t-field="product.description_sale" class="text-muted"/></div>
                 <hr/>
-                <p class="text-muted">
-                    This product is offered through Collective Purchase.
-                </p>
+                <p class="text-muted">This product is offered through Collective Purchases.</p>
+                <hr/>
+                <div t-foreach="cp_orders" t-as="order">
+                    <p t-field="order.name" class="text_muted"/>
+                    <p>Order open until <span t-field="order.deadline_date" t-field-options='{"widget":"date"}'/></p>  
+                    <p>Minimun product units by order : <span t-field="order.qty_min"/></p>
+                    <p>Price by product unit: <t t-call="website_purchase_collective.product_price"/></p> 
+                    <a id="add_to_cart" t-att-href="'/purchase/orders/'+str(order.id)" class="btn btn-primary btn-lg mt8">Place Your Order Now</a>
+                    <hr/>
+                </div>               
+                <div t-if="not cp_orders">
+                    <p>There is not currently any Collective Purchase opened for this product.</p>
+                </div>
+                <div><p t-field="product.description_sale" class="text-muted"/></div>
             </div>
           </div>
         </section>
@@ -920,7 +925,7 @@
           </div>
           <div class="js_payment mb64 row" t-if="not website_purchase_order.amount_total" id="payment_method">
             <div class="col-lg-8 col-sm-8">
-              <form target="_self" action="/purhase/validate" method="post" class="pull-right">
+              <form target="_self" action="/purchase/validate" method="post" class="pull-right">
                   <a style="width:100px;" class="btn btn-primary a-submit">
                     <span>Pay Now <span class="fa fa-long-arrow-right"></span></span>
                   </a>

@@ -279,15 +279,16 @@ class website_purchase(http.Controller):
             
         product = template_obj.browse(cr, uid, int(product), context=context)
         # Search if there is open collective purchases for this product
+        quotations = False 
         if product.purchase_ok:
-            #quotations = pool.get('purchase_collective.order').search(cr, uid, [('state', 'in', ['draft']),('partner_id','=',product.company_id.partner_id.id)])
-            quotations =  self.env['purchase_colective.order'].search( [('state', 'in', ['draft']),('partner_id','=',product.company_id.partner_id.id)])
-            if quotations:
-                deadline = quotations[0].deadline_date
-            else:
-                deadline = False
-                product = False
-                main_object = False
+            quotations_ids = pool.get('purchase_collective.order').search(cr, uid, [('state', 'in', ['draft']),('partner_id','=',product.company_id.partner_id.id)])
+            quotations =  pool.get('purchase_collective.order').browse(cr,uid,quotations_ids)
+            #if quotations:
+            #    deadline = quotations[0].deadline_date
+            #else:
+            #    deadline = False
+            #    product = False
+            #    main_object = False
 
         values = {
             'search': search,
@@ -302,7 +303,7 @@ class website_purchase(http.Controller):
             'product': product,
             'get_attribute_value_ids': self.get_attribute_value_ids,
             'cp_orders' : quotations,
-            'deadline' : deadline, 
+            #'deadline' : deadline, 
         }
         return request.website.render("website_purchase_collective.product", values)
 
