@@ -10,22 +10,7 @@ from openerp.tools.translate import _
 from openerp.addons.website.models.website import slug
 from openerp.addons.web.controllers.main import login_redirect
 import openerp.addons.website_sale.controllers.main
-"""
-class website_sale(openerp.addons.website_sale.controllers.main.website_sale):
-    # ToDo : 
-    # Update the total amount in the parent cp and subscribe the user to the wall
-    #@http.route(['/shop/confirmation'], type='http', auth="public", website=True)
-    #def payment_confirmation(self, **post):
-        #cr, uid, context = request.cr, request.uid, request.context
-        #sale_order_id = request.session.get('sale_last_order_id')
-        #if sale_order_id:
-        #    order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
-        #else:
-        #    return request.redirect('/shop')
-        #order.action_button_confirm() 
-        res = super(website_sale, self).payment_confirmation(**post)
-        return res
-"""
+
 PPG = 20 # Products Per Page
 PPR = 4  # Products Per Row
 
@@ -295,8 +280,15 @@ class website_purchase(http.Controller):
         product = template_obj.browse(cr, uid, int(product), context=context)
         # Search if there is open collective purchases for this product
         if product.purchase_ok:
-            quotations = pool.get('purchase_collective.order').search(cr, uid, [
-              ('state', 'in', ['draft']),('partner_id','=',product.company_id.partner_id.id)])
+            #quotations = pool.get('purchase_collective.order').search(cr, uid, [('state', 'in', ['draft']),('partner_id','=',product.company_id.partner_id.id)])
+            quotations =  self.env['purchase_colective.order'].search( [('state', 'in', ['draft']),('partner_id','=',product.company_id.partner_id.id)])
+            if quotations:
+                deadline = quotations[0].deadline_date
+            else:
+                deadline = False
+                product = False
+                main_object = False
+
         values = {
             'search': search,
             'category': category,
@@ -309,7 +301,8 @@ class website_purchase(http.Controller):
             'main_object': product,
             'product': product,
             'get_attribute_value_ids': self.get_attribute_value_ids,
-            'cp_orders' : quotations
+            'cp_orders' : quotations,
+            'deadline' : deadline, 
         }
         return request.website.render("website_purchase_collective.product", values)
 
