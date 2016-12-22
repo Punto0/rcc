@@ -1097,7 +1097,7 @@
                 </div>
                 <hr/>
                 <div t-if="order.notes" class="col-md-12">
-                  <div class='row'><span t-field="order.notes" t-field-options='{"widget": "html"}'/></div>
+                  <div><span t-field="order.notes" t-field-options='{"widget": "html"}'/></div>
                 </div>  
                 <hr/>
                 <div class="row">
@@ -1202,8 +1202,8 @@
           </ul>
           <h4>Secure Payment</h4>
           <ul class="list-unstyled mb32">
-            <li>&#9745; Pay through our payments gateways</li>
-            <li>&#9745; If the order does not reaches the minimun your funds will be returned to you at deadline date </li>
+            <li>&#9745; Pay through our own payments gateways without fees:</li>
+            <li>&#9745; Faircoin and Euros</li>
           </ul>
         </div>
         <div class="oe_structure"/>
