@@ -124,7 +124,7 @@ class sale_order(osv.Model):
         def action_button_confirm(self, cr, uid, ids, context=None):
             if self.is_cp:
                 cp_order = self.pool.get('purchase_collective.order').browse(cr, SUPERUSER_ID, self.cp_order_id, context=context)
-                cp_order.onchange_order_line(cr, uid, self.co_order_id)
+                cp_order.onchange_order_line(cr, uid, self.cp_order_id)
                 cp_order.subscribe(cr, uid, [])
             return super(sale_order, self).action_button_confirm(cr, uid, ids, context=context)
 
