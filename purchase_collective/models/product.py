@@ -17,6 +17,7 @@ class product_template(osv.Model):
         'cp_ok': fields.boolean("The product can be sold in Collective Purchases"),
         'sale_ok': fields.boolean(help="It can be sold individually through the normal shop", string="Allow Single Orders"),
         'purchase_ok': fields.boolean(help="It can sold in batchs through collective purchases", string="Allow Collective Orders"),
+        #'cp_order_id': fields.one2one('purchase_collective.order', 'Collective Purchase Allowed', help="This fields restricts the Collective Purchase qich can offered this. product. Leave empty to allow in all Collective Purchases opened for the supllier", string="Allowed Collective Purchases"),
     }
 
     _defaults = {
