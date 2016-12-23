@@ -281,9 +281,10 @@ class website_purchase(http.Controller):
         # Search if there is open collective purchases for this product
         quotations = False 
         if product.purchase_ok:
-            domain = [('state', 'in', ['draft']),('partner_id','=',product.company_id.partner_id.id)]
-            #if product.cp_order_id:
-            #    domain += [('cp_order_id','=',product.cp_order_id.id)]
+            if product.cp_order_id:
+                domain = [('id','=',product.cp_order_id.id)]
+            else:
+                domain = [('state', 'in', ['draft']),('partner_id','=',product.company_id.partner_id.id)]
             quotations_ids = pool.get('purchase_collective.order').search(cr, uid, domain) 
             quotations =  pool.get('purchase_collective.order').browse(cr,uid,quotations_ids)
             #if quotations:

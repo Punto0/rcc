@@ -74,10 +74,10 @@
                     <notebook>
                         <page string="Orders">
                             <field name="sales_order_lines">
-                                <tree string="Collective Purchase Order Lines">
+                                <tree>
                                     <field name="name"/>
                                     <field name="partner_id" string="Customer"/> 
-                                    <field name="state" invisible='0'/>
+                                    <field name="state"/>
                                     <field name="amount_total"/>
 <!--
                                     <button name="button_manual_payment" string="Manual Payment" type="object" 
@@ -216,6 +216,7 @@
         </record>
  
         <!-- Top menu item -->
+
         <menuitem
             id="base.menu_collective_purchase_root"
             name="Collective Purchases"

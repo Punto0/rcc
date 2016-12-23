@@ -23,7 +23,9 @@ class PurchaseCollectiveOrder(models.Model):
     _inherit = ['purchase.order',]  
     _description = 'Collective Purchases'
     
-    sales_order_lines = fields.One2many('sale.order','cp_order_id','Collective Order Lines',states={'approved':[('readonly',True)],'done':[('readonly',True)]},copy=True )
+    sales_order_lines = fields.One2many('sale.order','cp_order_id','Collective Order Lines',
+                                         states={'approved':[('readonly',True)],'done':[('readonly',True)]},
+                                         copy=False )
 
     deadline_date = fields.Date(string='Order Deadline', required=True, help="End date of the order. Place your orders before this date")
     
@@ -45,6 +47,7 @@ class PurchaseCollectiveOrder(models.Model):
     qty_min = fields.Float('Minimun product quantity by single sale', required=True, help='Minimun quantity allowed by each single sale order in product quantity')
   
     notes = fields.Text('Description for the collective purchase', translate=True)
+
     # Called in the update link in the cp form and in website payment confirmation
     @api.one
     @api.onchange('sales_order_lines') 
