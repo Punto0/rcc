@@ -48,53 +48,6 @@ class PurchaseCollectiveOrder(models.Model):
   
     notes = fields.Text('Description for the collective purchase', translate=True)
 
-    # Called in the update link in the cp form and in website payment confirmation
-    @api.one
-    @api.onchange('sales_order_lines') 
-    def onchange_order_line(self):
-        #_logger.info("onchange_order_lines-- ids : %s -- args: %s" %(ids,context))
-        cr, uid, context = self.env.cr, self.env.user, self.env.context
-        #cur_obj=self.pool.get('res.currency')
-
-        res = {
-                'amount_untaxed': 0.0,
-                'amount_tax': 0.0,
-                'amount_total': 0.0,
-        }
-
-        val = val1 = 0.0
-        val_tax = 0.0
-        val_untax = 0.0  
-
-        #order = self.browse(cr, uid, ids, context=context)
-
-        if True:
-            #cur = order.pricelist_id.currency_id
-            #_logger.info("order : %s " %order.sales_order_lines)
-            for line in self.sales_order_lines:
-                _logger.info("line %s " %line.state)
-                if line.state in ['done','approved','confirm','progress']: 
-                  val += line.amount_total
-                  #val_tax += val.get('amount_tax',0.0)
-                  #val_untax += val.get('amount_untaxed',0.0)
-
-            res['amount_tax'] = val_tax
-            res['amount_untaxed'] = val
-            res['amount_total']= val
-
-            _logger.info("Res : %s " %res)
-
-            self.amount_untaxed = res['amount_untaxed']
-            self.amount_tax = res['amount_tax']
-            self.amount_total = res['amount_total'] 
-        _logger.info("res : %s" %(res))
-        return res
-    
-    @api.multi 
-    def subscribe(self, partner):
-        self.message_subscribe(partner_ids=[(partner.id)])
-        #self.message_post(body=("Order line created by %s" %(partner.name)))
-  
     @api.multi
     def button_details(self):
        context = self.env.context.copy()
@@ -137,7 +90,7 @@ class PurchaseCollectiveOrder(models.Model):
         return result.keys()
     
     def create(self, cr, uid, vals, context=None):
-        logging.info("Creating order %s" %vals)  
+        #logging.info("Creating order %s" %vals)  
         if vals.get('name','/')=='/':
             vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'purchase_collective.order', context=context) or '/'
         if not vals.get('location_id'):
@@ -201,7 +154,7 @@ class PurchaseCollectiveOrder(models.Model):
         return True
     
     def wkf_confirm_order(self, cr, uid, ids, context=None):
-        _logger.info("Confirmando orden : %s" %ids)       
+        #_logger.info("Confirmando orden : %s" %ids)       
         todo = []
         for po in self.browse(cr, uid, ids, context=context):
             if not any(line.state != 'cancel' for line in po.order_line):
@@ -265,7 +218,7 @@ class PurchaseCollectiveOrder(models.Model):
         type_obj = self.pool.get('stock.picking.type')
         user_obj = self.pool.get('res.users')
         company_id = user_obj.browse(cr, uid, uid, context=context).company_id
-        logging.info("_get_picking_in company_id %s %s" %(company_id.id,company_id.parent_id.id))
+        #logging.info("_get_picking_in company_id %s %s" %(company_id.id,company_id.parent_id.id))
         types = type_obj.search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id.company_id', '=', company_id.id)], context=context)
         if not types:
             types = type_obj.search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id', '=', False)], context=context)
@@ -273,7 +226,7 @@ class PurchaseCollectiveOrder(models.Model):
             types = type_obj.search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id.company_id', '=', company_id.parent_id.id)], context=context)
             #if not types:
                 #raise osv.except_osv(_('Error!'), _("Make sure you have at least an incoming picking type defined"))
-        logging.info("Types %s" %types)
+        #logging.info("Types %s" %types)
         return types[0]
     
     _defaults = {
@@ -288,6 +241,58 @@ class PurchaseCollectiveOrder(models.Model):
         #'currency_id': lambda self, cr, uid, context: self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.currency_id.id,
         'picking_type_id': _get_picking_in,
     }
+
+    # Actualizamos el total de la orden colectiva y subscribimos el usuario al muro
+    @api.multi 
+    def action_button_confirm_sale(self, partner_id=None):
+        self.onchange_order_line()
+        if partner_id: 
+            #self.message_post(body=("Order line confirmed"))
+            self.message_subscribe(partner_ids=[(partner_id)])
+            #self.message_subscribe(partner_ids=[(order.partner_id.id])
+        return True 
+
+    # Called in the update link in the cp form and in website payment confirmation
+    @api.onchange('sales_order_lines') 
+    def onchange_order_line(self):
+        #_logger.info("onchange_order_lines-- ids : %s -- args: %s" %(ids,context))
+        cr, uid, context = self.env.cr, self.env.user, self.env.context
+        #cur_obj=self.pool.get('res.currency')
+
+        res = {
+                'amount_untaxed': 0.0,
+                'amount_tax': 0.0,
+                'amount_total': 0.0,
+        }
+
+        val = val1 = 0.0
+        val_tax = 0.0
+        val_untax = 0.0  
+
+        #order = self.browse(cr, uid, ids, context=context)
+
+        if True:
+            #cur = order.pricelist_id.currency_id
+            #_logger.info("order : %s " %order.sales_order_lines)
+            for line in self.sales_order_lines:
+                #_logger.info("line %s " %line.state)
+                if line.state in ['done','approved','confirm','progress']: 
+                  val += line.amount_total
+                  #val_tax += val.get('amount_tax',0.0)
+                  #val_untax += val.get('amount_untaxed',0.0)
+
+            res['amount_tax'] = val_tax
+            res['amount_untaxed'] = val
+            res['amount_total']= val
+
+            #_logger.info("Res : %s " %res)
+
+            self.amount_untaxed = res['amount_untaxed']
+            self.amount_tax = res['amount_tax']
+            self.amount_total = res['amount_total'] 
+        #_logger.info("res : %s" %(res))
+        return res
+    
 ###################################################
 
 

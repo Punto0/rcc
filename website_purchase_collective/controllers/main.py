@@ -9,7 +9,9 @@ from openerp.http import request
 from openerp.tools.translate import _
 from openerp.addons.website.models.website import slug
 from openerp.addons.web.controllers.main import login_redirect
+import openerp.addons.web.controllers.main
 import openerp.addons.website_sale.controllers.main
+
 
 PPG = 20 # Products Per Page
 PPR = 4  # Products Per Row
@@ -823,7 +825,7 @@ class website_purchase(http.Controller):
                     order.user_id = order.company_id.user_ids[0] # Cambia el salesman de la orden para que tenga acceso. User: All leads
 
         return request.website.render("website_purchase_collective.payment", values)
- 
+
     #-----------------------------------------------
     # Llamado por javascript y funciones varias
     #---------------------------------------------- 
@@ -840,5 +842,21 @@ class website_purchase(http.Controller):
         #return {product_id: prices[product_id][pricelist_id][0] for product_id in product_ids}
         return {product.id: product.list_price for product in products}
 
+class website_sale(openerp.addons.website_sale.controllers.main.website_sale):
+
+    # Update the total amount in the parent cp and subscribe the user to the wall
+    @http.route(['/shop/confirmation'], type='http', auth="public", website=True)
+    def payment_confirmation(self, **post):
+        cr, uid, context = request.cr, request.uid, request.context
+        sale_order_id = request.session.get('sale_last_order_id')
+        if sale_order_id:
+            order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
+        else:
+            return request.redirect('/shop')
+        if order.is_cp:
+            order.cp_order_id.action_button_confirm_sale(order.partner_id.id)
+        res = super(website_sale, self).payment_confirmation(**post)
+        return res
+ 
 
 # vim:expandtab:tabstop=4:softtabstop=4:shiftwidth=4:

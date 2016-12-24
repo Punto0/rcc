@@ -120,6 +120,7 @@ class sale_order(osv.Model):
         #logging.info("cart update returning : %s -- %s" %(line_id, quantity))
         return {'line_id': line_id, 'quantity': quantity}
 
+        """
         # Actualizamos el total de la orden colectiva y subscribimos el usuario al muro
         def action_button_confirm(self, cr, uid, ids, context=None):
             if self.is_cp:
@@ -127,6 +128,7 @@ class sale_order(osv.Model):
                 cp_order.onchange_order_line(cr, uid, self.cp_order_id)
                 cp_order.subscribe(cr, uid, [])
             return super(sale_order, self).action_button_confirm(cr, uid, ids, context=context)
+        """
 
 class website(orm.Model):
     _inherit = 'website'
