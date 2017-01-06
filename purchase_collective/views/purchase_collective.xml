@@ -13,17 +13,15 @@
                     <button name="print_quotation" string="Print RFQ" type="object" states="draft" class="oe_highlight" groups="base.group_user"/>
                     <button name="print_quotation" string="Re-Print RFQ" type="object" states="sent" groups="base.group_user"/>
 -->
-                    <button name="wkf_confirm_order" states="draft" string="Confirm Order" type="object"/>
+                    <button name="wkf_confirm_order" states="draft" string="Close Order" type="object"/>
                     <button name="purchase_confirm" states="bid" string="Confirm Order" class="oe_highlight" id="bid_confirm"/>
-                    <button name="picking_ok" states="except_picking" string="Manually Corrected"/>
-                    <button name="invoice_ok" states="except_invoice" string="Manually Corrected"/>
                     <button name="purchase_approve" states="confirmed" string="Approve Order" class="oe_highlight" groups="purchase.group_purchase_collective_manager"/>
                     <button name="wkf_send_rfq" states="approved" string="Send CPO by Email" type="object" context="{'send_rfq':False}"/>
                     <button name="view_picking" string="Receive Products" type="object" attrs="{'invisible': ['|', ('shipped','=',True), ('state','!=', 'approved')]}" class="oe_highlight"/>
                     <button name="view_invoice" string="Receive Invoice" type="object" attrs="{'invisible': ['|', ('invoice_method','in', ['picking', 'manual']), '|', ('state','!=', 'approved'), ('invoiced','=',True) ]}" class="oe_highlight"/>
-                    <button name="action_cancel_draft" states="cancel,sent,confirmed" string="Set to Draft" type="object" />
+                    <button name="action_cancel_draft" states="confirmed,sent,bid,approved,except_picking,except_invoice,cancel" string="Reopen Order" type="object" />
                     <button name="action_cancel" states="draft,confirmed,sent,bid,approved,except_picking,except_invoice" string="Cancel" type="object" />
-                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,bid,approved,done" statusbar_colors='{"except_picking":"red","except_invoice":"red","confirmed":"blue"}' readonly="1"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved" statusbar_colors='{"except_picking":"red","except_invoice":"red","confirmed":"blue"}' readonly="1"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -93,22 +91,25 @@
 -->
                                 <div class="oe_subtotal_footer_separator oe_inline" >
                                     <label for="amount_total"/>
-                                    <button name="onchange_order_line"
-                                            states="draft" string="(update)" type="object" class="oe_edit_only oe_link"/>
+                                    <button name="update_total_oldapi"
+                                            states="draft,sent,bid,approved,confirmed,cancel" 
+                                            string="Update total" 
+                                            type="object" 
+                                    /> <!-- class="oe_edit_only oe_link" -->
                                 </div>
                                 <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             </group>
                             <div class="oe_clear"/>
                             <field name="notes" placeholder="Place here your notes on the collective purchase order."/>
                         </page>
-                        <page string="RFQ &amp; Bid">
+                        <page string="RFQ &amp; Bid" invisible="1">
                             <group>
                                 <field name="incoterm_id"/>
                                 <field name="bid_date"/>
                                 <field name="bid_validity"/>
                             </group>
                         </page>
-                        <page string="Deliveries &amp; Invoices">
+                        <page string="Deliveries &amp; Invoices" invisible="1">
                             <group>
                                 <group>
                                     <field name="minimum_planned_date"/>

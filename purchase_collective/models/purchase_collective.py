@@ -29,9 +29,9 @@ class PurchaseCollectiveOrder(models.Model):
 
     deadline_date = fields.Date(string='Order Deadline', required=True, help="End date of the order. Place your orders before this date")
     
-    amount_untaxed = fields.Float('Amount untaxed',compute='onchange_order_line',store=True)
-    amount_tax = fields.Float('Taxes',compute='onchange_order_line',store=True)
-    amount_total = fields.Float('Amount Total',compute='onchange_order_line',store=True)
+    amount_untaxed = fields.Float('Amount untaxed',compute='update_total',store=True)
+    amount_tax = fields.Float('Taxes',compute='update_total',store=True)
+    amount_total = fields.Float('Amount Total',compute='update_total',store=True)
 
     street = fields.Char('Street')
     street2 = fields.Char('Street2')
@@ -154,21 +154,40 @@ class PurchaseCollectiveOrder(models.Model):
         return True
     
     def wkf_confirm_order(self, cr, uid, ids, context=None):
-        #_logger.info("Confirmando orden : %s" %ids)       
-        todo = []
         for po in self.browse(cr, uid, ids, context=context):
-            if not any(line.state != 'cancel' for line in po.order_line):
-                raise osv.except_osv(_('Error!'),_('You cannot confirm a purchase order without any purchase order line.'))
-            #if po.invoice_method == 'picking' and not any([l.product_id and l.product_id.type in ('product', 'consu') and l.state != 'cancel' for l in po.order_line]):
-            #    raise osv.except_osv(
-            #        _('Error!'),
-            #        _("You cannot confirm a purchase order with Invoice Control Method 'Based on incoming shipments' that doesn't contain any stockable item."))
-            #for line in po.order_line:
-            #    if line.state=='draft':
-            #        todo.append(line.id)        
-        #self.pool.get('purchase_collective.order_line').action_confirm(cr, uid, todo, context)
+            for line in po.sales_order_lines:
+                _logger.info("line.state : %s" %line.state)       
+                if line.state in ['draft','cancel']:
+                    line.unlink()
+            po.update_total()
         for id in ids:
             self.write(cr, uid, [id], {'state' : 'confirmed', 'validator' : uid}, context=context)
+        return True
+
+    def wkf_action_cancel(self, cr, uid, ids, context=None):
+        self.write(cr, uid, ids, {'state': 'cancel'}, context=context)
+        self.set_order_line_status(cr, uid, ids, 'cancel', context=context)
+        return True 
+
+    def action_cancel(self, cr, uid, ids, context=None):
+        _logger.info("cancel %s" %ids)    
+        for purchase in self.browse(cr, uid, ids, context=context):
+            for pick in purchase.picking_ids:
+                for move in pick.move_lines:
+                    if pick.state == 'done':
+                        raise osv.except_osv(
+                            _('Unable to cancel the purchase order %s.') % (purchase.name),
+                            _('You have already received some goods for it.  '))
+            self.pool.get('stock.picking').action_cancel(cr, uid, [x.id for x in purchase.picking_ids if x.state != 'cancel'], context=context)
+            for inv in purchase.invoice_ids:
+                if inv and inv.state not in ('cancel', 'draft'):
+                    raise osv.except_osv(
+                        _('Unable to cancel this purchase order.'),
+                        _('You must first cancel all invoices related to this purchase order.'))
+            self.pool.get('account.invoice') \
+                .signal_workflow(cr, uid, map(attrgetter('id'), purchase.invoice_ids), 'invoice_cancel')
+        self.signal_workflow(cr, uid, ids, 'purchase_cancel')
+        self.wkf_action_cancel(cr, uid, ids, context=context)
         return True
 
     def _set_po_lines_invoiced(self, cr, uid, ids, context=None):
@@ -245,55 +264,40 @@ class PurchaseCollectiveOrder(models.Model):
     # Actualizamos el total de la orden colectiva y subscribimos el usuario al muro
     @api.multi 
     def action_button_confirm_sale(self, partner_id=None):
-        self.onchange_order_line()
+        self.update_total()
         if partner_id: 
             #self.message_post(body=("Order line confirmed"))
             self.message_subscribe(partner_ids=[(partner_id)])
             #self.message_subscribe(partner_ids=[(order.partner_id.id])
         return True 
 
-    # Called in the update link in the cp form and in website payment confirmation
-    @api.onchange('sales_order_lines') 
-    def onchange_order_line(self):
-        #_logger.info("onchange_order_lines-- ids : %s -- args: %s" %(ids,context))
-        cr, uid, context = self.env.cr, self.env.user, self.env.context
-        #cur_obj=self.pool.get('res.currency')
+    # The update link in the cp form calls to the old api
+    def update_total_oldapi(self, cr, uid, ids, context=None):
+        orders = self.browse(cr, uid, ids)
+        orders.update_total()
 
+    def update_total(self):
         res = {
                 'amount_untaxed': 0.0,
                 'amount_tax': 0.0,
                 'amount_total': 0.0,
         }
-
         val = val1 = 0.0
         val_tax = 0.0
         val_untax = 0.0  
-
-        #order = self.browse(cr, uid, ids, context=context)
-
         if True:
-            #cur = order.pricelist_id.currency_id
-            #_logger.info("order : %s " %order.sales_order_lines)
             for line in self.sales_order_lines:
-                #_logger.info("line %s " %line.state)
                 if line.state in ['done','approved','confirm','progress']: 
                   val += line.amount_total
-                  #val_tax += val.get('amount_tax',0.0)
-                  #val_untax += val.get('amount_untaxed',0.0)
-
             res['amount_tax'] = val_tax
             res['amount_untaxed'] = val
             res['amount_total']= val
-
-            #_logger.info("Res : %s " %res)
-
             self.amount_untaxed = res['amount_untaxed']
             self.amount_tax = res['amount_tax']
             self.amount_total = res['amount_total'] 
-        #_logger.info("res : %s" %(res))
         return res
     
 ###################################################
-
+#    raise osv.except_osv(_('Error!'),_('You cannot confirm a purchase order without any purchase order line.'))
 
 
