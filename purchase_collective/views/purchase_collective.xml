@@ -21,7 +21,10 @@
                     <button name="view_invoice" string="Receive Invoice" type="object" attrs="{'invisible': ['|', ('invoice_method','in', ['picking', 'manual']), '|', ('state','!=', 'approved'), ('invoiced','=',True) ]}" class="oe_highlight"/>
                     <button name="action_cancel_draft" states="confirmed,sent,bid,approved,except_picking,except_invoice,cancel" string="Reopen Order" type="object" />
                     <button name="action_cancel" states="draft,confirmed,sent,bid,approved,except_picking,except_invoice" string="Cancel" type="object" />
-                    <field name="state" widget="statusbar" statusbar_visible="draft,approved" statusbar_colors='{"except_picking":"red","except_invoice":"red","confirmed":"blue"}' readonly="1"/>
+                    <field name="state" widget="statusbar" 
+                           statusbar_visible="draft,confirmed" 
+                           statusbar_colors='{"draft":"red","confirmed":"blue","except_picking":"red","except_invoice":"red","confirmed":"blue"}' 
+                           readonly="1"/>
                 </header>
                 <sheet>
                     <div class="oe_title">

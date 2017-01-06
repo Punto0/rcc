@@ -41,12 +41,27 @@ class PurchaseCollectiveOrder(models.Model):
     country_id = fields.Many2one('res.country', 'Country', ondelete='restrict')
     email = fields.Char('Email')
     phone = fields.Char('Phone')
-    #fax = fields.Char('Fax')
     mobile = fields.Char('Mobile')
-
     qty_min = fields.Float('Minimun product quantity by single sale', required=True, help='Minimun quantity allowed by each single sale order in product quantity')
-  
     notes = fields.Text('Description for the collective purchase', translate=True)
+
+    CP_STATE_SELECTION = [
+        ('draft', 'Open'),
+        ('sent', 'Sent'),
+        ('bid', 'Bid Received'),
+        ('confirmed', 'Closed'),
+        ('approved', 'Closed'),
+        ('except_picking', 'Shipping Exception'),
+        ('except_invoice', 'Invoice Exception'),
+        ('done', 'Done'),
+        ('cancel', 'Cancelled')
+    ]
+    state = fields.Selection(CP_STATE_SELECTION, 'Status', readonly=True,
+                                  help="The status of the collective purchase order. "
+                                       "An 'Open' order accepts new single orders on it. "
+                                       "A 'Closed' order does not accept new single orders."
+                                       "A 'Cancelled' order is an order that it has not executed and the funds are returning to the customers.",
+                                  select=True, copy=False)
 
     @api.multi
     def button_details(self):
