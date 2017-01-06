@@ -29,8 +29,8 @@ class PurchaseCollectiveOrder(models.Model):
 
     deadline_date = fields.Date(string='Order Deadline', required=True, help="End date of the order. Place your orders before this date")
     
-    amount_untaxed = fields.Float('Amount untaxed',compute='update_total',store=True)
-    amount_tax = fields.Float('Taxes',compute='update_total',store=True)
+    #amount_untaxed = fields.Float('Amount untaxed',compute='update_total',store=True)
+    #amount_tax = fields.Float('Taxes',compute='update_total',store=True)
     amount_total = fields.Float('Amount Total',compute='update_total',store=True)
 
     street = fields.Char('Street')
@@ -290,28 +290,20 @@ class PurchaseCollectiveOrder(models.Model):
     def update_total_oldapi(self, cr, uid, ids, context=None):
         orders = self.browse(cr, uid, ids)
         orders.update_total()
+        return True
 
-    def update_total(self):
-        res = {
-                'amount_untaxed': 0.0,
-                'amount_tax': 0.0,
-                'amount_total': 0.0,
-        }
-        val = val1 = 0.0
-        val_tax = 0.0
-        val_untax = 0.0  
-        if True:
-            for line in self.sales_order_lines:
-                if line.state in ['done','approved','confirm','progress']: 
+    # Esto es porque purchase esta en la vieja api y nosotros en la nueva, los campos computados han cambiado bastante 
+    # y no encuentro la forma de sobreescribirlos correctamente.
+    # https://github.com/odoo/odoo/issues/2693 
+    def update_total(self, context=None):
+        val = 0.0  
+        for line in self.sales_order_lines:
+            if line.state in ['done','approved','confirm','progress']: 
                   val += line.amount_total
-            res['amount_tax'] = val_tax
-            res['amount_untaxed'] = val
-            res['amount_total']= val
-            self.amount_untaxed = res['amount_untaxed']
-            self.amount_tax = res['amount_tax']
-            self.amount_total = res['amount_total'] 
-        return res
-    
+        context = dict(context or {}, mail_create_nolog=True)
+        self.update({'amount_total':val})
+        return True
+
 ###################################################
 #    raise osv.except_osv(_('Error!'),_('You cannot confirm a purchase order without any purchase order line.'))
 
