@@ -1150,7 +1150,9 @@
                   </div>
                   <div class="oe_structure"/>
                 </div>
-                <center><a id="add_to_cart" t-att-href="'/purchase/cart/'+str(order.id)" class="btn btn-primary btn-lg mt8">Place Your Order Now</a></center>
+                <t t-if="order.state in ['draft']">
+                    <center><a id="add_to_cart" t-att-href="'/purchase/cart/'+str(order.id)" class="btn btn-primary btn-lg mt8">Place Your Order Now</a></center>
+                </t>
                 <div class="oe_structure mb32"/>
               </div>
             </div>
