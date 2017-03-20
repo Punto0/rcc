@@ -342,11 +342,11 @@
                 <hr/>
                 <p class="text-muted">This product is offered through Collective Purchases.</p>
                 <hr/>
-                <div t-foreach="cp_orders" t-as="order" t-if="cp_orders">
+                <div t-if="cp_orders" t-foreach="cp_orders" t-as="order">
                     <p t-field="order.name" class="text_muted"/>
                     <p>Order open until <span t-field="order.deadline_date" t-field-options='{"widget":"date"}'/></p>  
                     <p>Minimun product units by order : <span t-field="order.qty_min"/></p>
-                    <p>Price by product unit: <t t-call="website_purchase_collective.product_price"/></p> 
+                    <p>Price by product unit: <t t-call="website_purchase_collective.product_price"/></p>
                     <a id="add_to_cart" t-att-href="'/purchase/orders/'+str(order.id)" class="btn btn-primary btn-lg mt8">Place Your Order Now</a>
                     <hr/>
                 </div>               
@@ -394,6 +394,7 @@
             t-field="product.price"
             t-field-options='{
                "widget": "monetary",
+               "from_currency": "product.company_id.currency_id",
                "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
            }'/>
           <span itemprop="price" style="display:none;" t-esc="product.price"/>

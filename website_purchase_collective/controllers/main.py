@@ -280,7 +280,7 @@ class website_purchase(http.Controller):
             context['pricelist'] = int(self.get_pricelist())
             
         product = template_obj.browse(cr, uid, int(product), context=context)
-        # Search if there is open collective purchases for this product
+        # Search open collective purchases for this product
         quotations = False 
         if product.purchase_ok:
             if product.cp_order_id:
@@ -289,7 +289,7 @@ class website_purchase(http.Controller):
                 domain = [('state', 'in', ['draft']),('partner_id','=',product.seller_id.id)]
             quotations_ids = pool.get('purchase_collective.order').search(cr, uid, domain) 
             quotations =  pool.get('purchase_collective.order').browse(cr,uid,quotations_ids)
-
+        
         values = {
             'search': search,
             'category': category,
