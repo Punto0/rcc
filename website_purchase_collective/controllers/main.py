@@ -337,10 +337,33 @@ class website_purchase(http.Controller):
     # Carro
     #-----------------------------------------------
 
-    @http.route(['/purchase/cart'], type='http', auth="public", website=True)
-    def cart(self, **post):
+    @http.route(['/purchase/cart/<int:order_id>', '/purchase/cart' ], type='http', auth="public", website=True)
+    def cart(self, order_id=None, **post):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
-        order = request.website.purchase_get_order()
+        #request.website.purchase_reset()
+        #request.website.sale_reset() 
+        domain = [
+        #    ('state', 'not in', ['draft', 'cancel']),
+            ('id', '=', order_id)
+        ]
+        order = request.env['purchase_collective.order'].search(domain)
+        request.session['cp_order_id'] = order_id
+        products = request.env['product.product'].sudo().search([
+            ('seller_id','=',order.partner_id.id),
+            ('purchase_ok','=',True)
+        ])
+        logging.info("Products : %s " %products) # debug
+
+        sale_order = request.website.purchase_get_order(force_create=1, cp_order_id=order_id, context=context)
+        sale_order.write( { 'cp_order_id' : order_id, 'is_cp' : True } )
+
+        products_filtered = []
+        for p in products:
+            # logging.info("\nProduct : %s\n seller : %s\norder supplier : %s\ncp_order_allowed : %s " %(p.name, p.seller_id.id, order.partner_id, p.$
+            if ( not p.cp_order_id ) or ( p.cp_order_id.id == order_id):
+                sale_order._cp_cart_update(product_id=p.id, set_qty=order.qty_min)
+
+        #order = request.website.purchase_get_order()
         if order:
             from_currency = pool.get('product.price.type')._get_field_currency(cr, uid, 'list_price', context)
             to_currency = order.pricelist_id.currency_id
@@ -353,11 +376,11 @@ class website_purchase(http.Controller):
             'compute_currency': compute_currency,
             'suggested_products': [],
         }
-        if order:
-            _order = order
-            if not context.get('pricelist'):
-                _order = order.with_context(pricelist=order.pricelist_id.id)
-            values['suggested_products'] = _order._cart_accessories()
+        #if order:
+        #    _order = order
+        #    if not context.get('pricelist'):
+        #        _order = order.with_context(pricelist=order.pricelist_id.id)
+        #    values['suggested_products'] = _order._cart_accessories()
 
         return request.website.render("website_purchase_collective.cart", values)
 
@@ -416,13 +439,11 @@ class website_purchase(http.Controller):
         return request.website.render(
             'website_purchase_collective.request_quotations_only', quotations)
 
-    @http.route(
-        ['/purchase/orders/<int:order_id>'], type='http', auth="public",
-        website=True)
+    @http.route(['/purchase/orders/<int:order_id>'], type='http', auth="public", website=True)
     def supplier_orders_followup(self, order_id=None):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
-        request.website.purchase_reset()
-        request.website.sale_reset() 
+        # request.website.purchase_reset()
+        # request.website.sale_reset() 
         domain = [
         #    ('state', 'not in', ['draft', 'cancel']),
             ('id', '=', order_id)
@@ -433,16 +454,16 @@ class website_purchase(http.Controller):
             ('seller_id','=',order.partner_id.id), 
             ('purchase_ok','=',True)
         ])
-        logging.info("Products : %s " %products) # debug
+        # logging.info("Products : %s " %products) # debug
 
-        sale_order = request.website.purchase_get_order(force_create=1, cp_order_id=order_id, context=context)
-        sale_order.write( { 'cp_order_id' : order_id, 'is_cp' : True } )
+        # sale_order = request.website.purchase_get_order(force_create=1, cp_order_id=order_id, context=context)
+        # sale_order.write( { 'cp_order_id' : order_id, 'is_cp' : True } )
 
         products_filtered = []
         for p in products:
-            logging.info("\nProduct : %s\n seller : %s\norder supplier : %s\ncp_order_allowed : %s " %(p.name, p.seller_id.id, order.partner_id, p.cp_order_id))
+            # logging.info("\nProduct : %s\n seller : %s\norder supplier : %s\ncp_order_allowed : %s " %(p.name, p.seller_id.id, order.partner_id, p.cp_order_id))
             if ( not p.cp_order_id ) or ( p.cp_order_id.id == order_id):
-                sale_order._cp_cart_update(product_id=p.id, set_qty=order.qty_min)
+                # sale_order._cp_cart_update(product_id=p.id, set_qty=order.qty_min)
                 products_filtered.append(p) 
 
         #progressbar = ( order.amount_all / 1000 ) or 0.5        
