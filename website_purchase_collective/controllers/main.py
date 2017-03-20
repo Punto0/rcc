@@ -286,7 +286,7 @@ class website_purchase(http.Controller):
             if product.cp_order_id:
                 domain = [('id','=',product.cp_order_id.id)]
             else:
-                domain = [('state', 'in', ['draft']),('partner_id','=',product.company_id.partner_id.id)]
+                domain = [('state', 'in', ['draft']),('partner_id','=',product.seller_id.id)]
             quotations_ids = pool.get('purchase_collective.order').search(cr, uid, domain) 
             quotations =  pool.get('purchase_collective.order').browse(cr,uid,quotations_ids)
             #if quotations:
