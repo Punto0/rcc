@@ -291,7 +291,7 @@
   </xpath>
 </template>
 
-<!-- /shop/product product page -->
+<!-- /shop/product single product page -->
 <template id="product" name="Product">
   <t t-call="website.layout">
       <t t-set="additional_title" t-value="product.name"/>
@@ -342,7 +342,7 @@
                 <hr/>
                 <p class="text-muted">This product is offered through Collective Purchases.</p>
                 <hr/>
-                <div t-foreach="cp_orders" t-as="order">
+                <div t-foreach="cp_orders" t-as="order" t-if="cp_orders">
                     <p t-field="order.name" class="text_muted"/>
                     <p>Order open until <span t-field="order.deadline_date" t-field-options='{"widget":"date"}'/></p>  
                     <p>Minimun product units by order : <span t-field="order.qty_min"/></p>

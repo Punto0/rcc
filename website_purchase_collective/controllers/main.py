@@ -284,17 +284,11 @@ class website_purchase(http.Controller):
         quotations = False 
         if product.purchase_ok:
             if product.cp_order_id:
-                domain = [('id','=',product.cp_order_id.id)]
+                domain = [('state', 'in', ['draft']),('id','=',product.cp_order_id.id)]
             else:
                 domain = [('state', 'in', ['draft']),('partner_id','=',product.seller_id.id)]
             quotations_ids = pool.get('purchase_collective.order').search(cr, uid, domain) 
             quotations =  pool.get('purchase_collective.order').browse(cr,uid,quotations_ids)
-            #if quotations:
-            #    deadline = quotations[0].deadline_date
-            #else:
-            #    deadline = False
-            #    product = False
-            #    main_object = False
 
         values = {
             'search': search,
@@ -309,7 +303,6 @@ class website_purchase(http.Controller):
             'product': product,
             'get_attribute_value_ids': self.get_attribute_value_ids,
             'cp_orders' : quotations,
-            #'deadline' : deadline, 
         }
         return request.website.render("website_purchase_collective.product", values)
 
