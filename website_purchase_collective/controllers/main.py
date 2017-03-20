@@ -465,7 +465,7 @@ class website_purchase(http.Controller):
 	            {
                 'order': order,
                 'products': products_filtered,
-                'progressbar': '54.3',
+                'progressbar': '1',
             })
 
     #------------------------------------------------------
@@ -871,6 +871,6 @@ class website_sale(openerp.addons.website_sale.controllers.main.website_sale):
             order.cp_order_id.action_button_confirm_sale(order.partner_id.id)
         res = super(website_sale, self).payment_confirmation(**post)
         return res
- 
+
 
 # vim:expandtab:tabstop=4:softtabstop=4:shiftwidth=4:

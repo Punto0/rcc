@@ -44,7 +44,8 @@ class PurchaseCollectiveOrder(models.Model):
     mobile = fields.Char('Mobile')
     qty_min = fields.Float('Minimun product quantity by single sale', required=True, help='Minimun quantity allowed by each single sale order in product quantity')
     notes = fields.Text('Description for the collective purchase', translate=True)
-
+    progress = fields.Float('Progress on this Collective Purchase',compute='update_total',store=True)
+    qty_total = fields.Float('Minimum quantity to execute the order in currency', required=True)
     CP_STATE_SELECTION = [
         ('draft', 'Open'),
         ('sent', 'Sent'),
@@ -301,7 +302,8 @@ class PurchaseCollectiveOrder(models.Model):
             if line.state in ['done','approved','confirm','progress']: 
                   val += line.amount_total
         context = dict(context or {}, mail_create_nolog=True)
-        self.update({'amount_total':val})
+        progress= 100 * val / self.qty_total
+        self.update({'amount_total':val, 'progress':progress })
         return True
 
 ###################################################

@@ -1091,9 +1091,10 @@
                 <hr/>
                 <div class='row'>
                   <center>
-<!--                  <div><span t-field="progressbar" t-field-options='{"widget": "progressbar"}'/></div> -->
-                  <div class="inline">Funded at the moment: <strong><span t-field="order.amount_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>
-                  </div>
+<!--                  <div><span t-field="order.progress" t-field-options='{"widget": "progressbar"}'/></div>
+                  <div><span t-field="order.progress" t-field-options='{"widget": "percentpie" }'/></div> -->
+                  <div class="inline">Funded at the moment: <strong><span t-field="order.amount_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>                  </div>
+                  <div class="inline">Quantity minimun to execute the order: <strong><span t-field="order.qty_total" t-field-options='{"widget": "monetary", "display_currency": "order.pricelist_id.currency_id"}'/></strong>                  </div>
                   </center>
                 </div>
                 <hr/>
@@ -1113,7 +1114,7 @@
          <!--           <th colspan="2">Description</th> -->
                         <th><center>Price</center></th>
     <!--                <th>Quantity</th> -->
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       <t t-foreach="products" t-as="line">
