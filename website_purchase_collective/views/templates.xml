@@ -971,7 +971,6 @@
                   <tr class="active">
                       <th>Order #</th>
                       <th>Supplier</th>
-                      <th>Responsible</th>
                       <th>Deadline Date</th>
                       <th>Delivery City</th>
                       <th>Minimun quantity by single sale order</th>
@@ -985,20 +984,11 @@
                             <a t-att-href="'/purchase/orders/'+str(request_quotation.id)"><t t-esc="request_quotation.name"/></a>
                         </td>
                         <td><t t-esc="request_quotation.partner_id.name" /></td> 
-                        <td><t t-esc="request_quotation.create_uid.name" /></td> 
                         <td><t t-esc="request_quotation.deadline_date" /></td> 
                         <td><t t-esc="request_quotation.city" /></td> 
                         <td><t t-esc="request_quotation.qty_min" /></td>
                         <td><span t-esc="request_quotation.amount_total" t-esc-options='{"widget": "monetary", "display_currency": "request_quotation.pricelist_id.currency_id"}'/></td>
-                        <td><p t-field="request_quotation.notes" t-field-options='{"widget": "html"}'/></td> 
-
-<!--                        <td>
-                            <a t-attf-href="/report/pdf/purchase.report_purchasequotation/#{request_quotation.id}"
-                                    target="new">
-                                <i class="fa fa-file-pdf-o"/> Print
-                            </a>
-                        </td>
--->
+                        <td><p t-field="request_quotation.short_description" t-field-options='{"widget": "html"}'/></td> 
                     </tr>
                 </t>
                 <tr t-att-class="'hidden' if len(request_quotations) &lt; 5 else ''">
@@ -1082,9 +1072,9 @@
                     <div><span t-field="order.partner_id.comment"/></div>
                   </div>
                   <div id="shipping_address" class="col-md-6">
-                    <div><strong>Responsible of this order : </strong></div>
+                    <div><strong>Collective Purchase organized by : </strong></div>
                     <div>
-                      <address t-field="order.create_uid" t-field-options='{"widget": "contact", "fields": ["address", "name","street","city","state","country","website"], "no_marker": true}'/>
+                      <address t-field="order.company_id.partner_id" t-field-options='{"widget": "contact", "fields": ["address", "name","street","city","state","country","website"], "no_marker": true}'/>
                     </div>
                   </div>
                 </div>

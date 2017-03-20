@@ -43,9 +43,10 @@ class PurchaseCollectiveOrder(models.Model):
     phone = fields.Char('Phone')
     mobile = fields.Char('Mobile')
     qty_min = fields.Float('Minimun product quantity by single sale', required=True, help='Minimun quantity allowed by each single sale order in product quantity')
-    notes = fields.Text('Description for the collective purchase', translate=True)
+    notes = fields.Text('Long description of the collective purchase', translate=True)
     progress = fields.Float('Progress on this Collective Purchase',compute='update_total',store=True)
     qty_total = fields.Float('Minimum quantity to execute the order in currency', required=True)
+    short_description = fields.Text('Short description to show in the list')  
     CP_STATE_SELECTION = [
         ('draft', 'Open'),
         ('sent', 'Sent'),
