@@ -6,17 +6,23 @@
             <field name="model">product.template</field>
             <field name="inherit_id" ref="purchase.view_product_supplier_inherit"/>
             <field name="arch" type="xml" >
-              <xpath expr="//field[@name='purchase_ok']" position="after">
-                <group name="collective_purchase" string="Collective Purchase" groups="purchase.group_purchase_collective_manager">  
+              <xpath expr="//div/label[@for='purchase_ok']" position="after">
+                <div class="oe_left">
 <!--                    <field name="cp_price"/> -->
-                    <field name="cp_order_id"/>
-                </group>
+                    <label for="cp_order_id" class="inline"/>
+                    <field name="cp_order_id" 
+                           class="inline"
+                           string="Collective Purchase for this product" 
+                           help="Leave in blank to permit this product in all of your collective purchases" 
+                           options="{'no_create': True }"
+                           groups="purchase_collective.group_purchase_collective_user"/>
+                </div>
               </xpath>
               <xpath expr="//div/field[@name='purchase_ok']" position="attributes">
-                  <attribute name="groups">purchase.group_purchase_collective_manager</attribute>
+                  <attribute name="groups">purchase_collective.group_purchase_collective_user</attribute>
               </xpath>
               <xpath expr="//div/label[@for='purchase_ok']" position="attributes">
-                  <attribute name="groups">purchase.group_purchase_collective_manager</attribute>
+                  <attribute name="groups">purchase_collective.group_purchase_collective_user</attribute>
               </xpath>
             </field>
         </record>
@@ -26,7 +32,7 @@
             <field name="inherit_id" ref="product.product_template_form_view"/>
             <field name="arch" type="xml">
                <xpath expr="//page[@string='Procurements']" position="attributes">
-                    <attribute name="groups">purchase.group_purchase_collective_manager</attribute>
+                    <attribute name="groups">purchase_collective.group_purchase_collective_user</attribute>
                </xpath>
             </field>
         </record>
