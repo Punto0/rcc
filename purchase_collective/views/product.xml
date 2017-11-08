@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="purchase.view_product_supplier_inherit"/>
             <field name="arch" type="xml" >
               <xpath expr="//div/label[@for='purchase_ok']" position="after">
-                <div class="oe_left">
+                <div class="oe_left" groups="purchase_collective.group_purchase_collective_user" >
 <!--                    <field name="cp_price"/> -->
                     <label for="cp_order_id" class="inline"/>
                     <field name="cp_order_id" 
@@ -15,7 +15,7 @@
                            string="Collective Purchase for this product" 
                            help="Leave in blank to permit this product in all of your collective purchases" 
                            options="{'no_create': True }"
-                           groups="purchase_collective.group_purchase_collective_user"/>
+                    />
                 </div>
               </xpath>
               <xpath expr="//div/field[@name='purchase_ok']" position="attributes">
