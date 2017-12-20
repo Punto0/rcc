@@ -2,14 +2,13 @@
 
 #added for onchange_product_id
 import pytz
-import logging
-
-from openerp import models, fields, api, osv, _, SUPERUSER_ID
-from openerp.exceptions import Warning
-
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from operator import attrgetter
+import logging
+
+from openerp import models, fields, api, osv, _, SUPERUSER_ID
+from openerp.exceptions import except_orm, Warning, RedirectWarning
 from openerp.tools.safe_eval import safe_eval as eval
 import openerp.addons.decimal_precision as dp
 from openerp.osv.orm import browse_record_list, browse_record, browse_null
@@ -254,15 +253,14 @@ class PurchaseCollectiveOrder(models.Model):
         type_obj = self.pool.get('stock.picking.type')
         user_obj = self.pool.get('res.users')
         company_id = user_obj.browse(cr, uid, uid, context=context).company_id
-        #logging.info("_get_picking_in company_id %s %s" %(company_id.id,company_id.parent_id.id))
         types = type_obj.search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id.company_id', '=', company_id.id)], context=context)
         if not types:
             types = type_obj.search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id', '=', False)], context=context)
         if not types: # En fairmarket no hay definidos almacenes por compañia, usamos la madre
-            types = type_obj.search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id.company_id', '=', company_id.parent_id.id)], context=context)
-            #if not types:
-                #raise osv.except_osv(_('Error!'), _("Make sure you have at least an incoming picking type defined"))
-        #logging.info("Types %s" %types)
+            types = type_obj.search(cr, SUPERUSER_ID, [('code', '=', 'incoming'), ('warehouse_id.company_id', '=', company_id.parent_id.id)], context=context)
+            if not types:
+                raise except_orm('Error!','Make sure your shop has FairMarket defined as parent company')
+                return True
         return types[0]
     
     _defaults = {
