@@ -1,4 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_purchase_collective_order_public,purchase_collective.order,model_purchase_collective_order,base.group_public,1,0,0,0
+access_purchase_collective_order_public,purchase_collective.order,model_purchase_collective_order,,1,0,0,0
 access_purchase_collective_order,purchase_collective.order,model_purchase_collective_order,group_purchase_collective_user,1,1,1,0
 access_purchase_collective_order_manager,purchase_collective.order,model_purchase_collective_order,group_purchase_collective_manager,1,1,1,1
