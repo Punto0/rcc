@@ -13,8 +13,8 @@ import openerp.addons.web.controllers.main
 import openerp.addons.website_sale.controllers.main
 
 
-PPG = 20 # Products Per Page
-PPR = 4  # Products Per Row
+PPG = 30 # Products Per Page
+PPR = 5  # Products Per Row
 
 class table_compute(object):
     def __init__(self):
@@ -174,7 +174,7 @@ class website_purchase(http.Controller):
     
     @http.route([
         '/purchase/products',
-        '/purchase/products/<int:page>',
+        '/purchase/products/page/<int:page>',
         '/purchase/category/<model("product.public.category"):category>',
         '/purchase/category/<model("product.public.category"):category>/page/<int:page>'
     ], type='http', auth="public", website=True)
@@ -197,7 +197,7 @@ class website_purchase(http.Controller):
 
         product_obj = pool.get('product.template')
 
-        url = "/purchase"
+        url = "/purchase/products"
         product_count = product_obj.search_count(cr, uid, domain, context=context)
         if search:
             post["search"] = search
